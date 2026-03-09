@@ -1,5 +1,8 @@
-import { auth } from "@/auth";
-import { NextResponse } from "next/server";
+import NextAuth from "next-auth";
+import { authConfig } from "@/auth.config";
+
+// Edge-safe: uses only authConfig which has no Node.js-only imports.
+const { auth } = NextAuth(authConfig);
 
 export default auth((req) => {
   const { pathname } = req.nextUrl;
@@ -10,15 +13,13 @@ export default auth((req) => {
     if (!user) {
       const loginUrl = new URL("/login", req.url);
       loginUrl.searchParams.set("callbackUrl", pathname);
-      return NextResponse.redirect(loginUrl);
+      return Response.redirect(loginUrl);
     }
 
     if ((user as { role?: string }).role !== "admin") {
-      return NextResponse.redirect(new URL("/?unauthorized=1", req.url));
+      return Response.redirect(new URL("/?unauthorized=1", req.url));
     }
   }
-
-  return NextResponse.next();
 });
 
 export const config = {
