@@ -2,6 +2,8 @@
 
 import { useEffect, useState, useRef, useCallback } from "react";
 
+const EDITOR_ENABLED = process.env.NODE_ENV !== "production";
+
 interface TreeNode {
   path: string;
   name: string;
@@ -38,7 +40,7 @@ function LineNumbers({ content }: { content: string }) {
 
 export default function EditorPage() {
   const [tree, setTree] = useState<TreeNode[]>([]);
-  const [treeLoading, setTreeLoading] = useState(true);
+  const [treeLoading, setTreeLoading] = useState(EDITOR_ENABLED);
   const [openFile, setOpenFile] = useState<string | null>(null);
   const [content, setContent] = useState("");
   const [originalContent, setOriginalContent] = useState("");
@@ -54,7 +56,8 @@ export default function EditorPage() {
   }
 
   useEffect(() => {
-    setTreeLoading(true);
+    if (!EDITOR_ENABLED) return;
+
     fetch("/api/admin/editor")
       .then((r) => r.json())
       .then((d: { tree: TreeNode[] }) => {
@@ -109,6 +112,8 @@ export default function EditorPage() {
   // Ctrl+S / Cmd+S to save
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
+      if (!EDITOR_ENABLED) return;
+
       if ((e.ctrlKey || e.metaKey) && e.key === "s") {
         e.preventDefault();
         saveFile();
@@ -190,6 +195,22 @@ export default function EditorPage() {
 
   const isDirty = content !== originalContent;
   const currentExt = openFile ? openFile.split(".").pop()?.toLowerCase() : undefined;
+
+  if (!EDITOR_ENABLED) {
+    return (
+      <div
+        className="rounded-2xl border p-6"
+        style={{ backgroundColor: "#161B22", borderColor: "#21262D" }}
+      >
+        <h1 className="text-2xl font-black" style={{ color: "#E6EDF3" }}>
+          Code Editor Unavailable
+        </h1>
+        <p className="text-sm mt-2" style={{ color: "#8B949E" }}>
+          The in-app code editor is disabled in production for security.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-4">

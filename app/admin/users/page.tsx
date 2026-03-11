@@ -22,7 +22,6 @@ export default function UsersPage() {
   }
 
   const load = useCallback(() => {
-    setLoading(true);
     fetch("/api/admin/users")
       .then((r) => r.json())
       .then((d: { users: User[] }) => {

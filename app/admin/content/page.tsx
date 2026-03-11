@@ -195,7 +195,6 @@ export default function ContentPage() {
   }
 
   const load = useCallback(() => {
-    setLoading(true);
     fetch("/api/admin/content")
       .then((r) => r.json())
       .then((d: { blocks: Block[] }) => {

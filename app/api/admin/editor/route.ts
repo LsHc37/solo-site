@@ -4,6 +4,7 @@ import fs from "fs";
 import path from "path";
 
 const PROJECT_ROOT = process.cwd();
+const EDITOR_ENABLED = process.env.NODE_ENV !== "production";
 
 // Only these top-level directories can be browsed / edited
 const ALLOWED_DIRS = ["app", "lib", "public", "components", "styles"];
@@ -72,6 +73,10 @@ function buildTree(absDir: string, relBase: string): TreeNode[] {
 }
 
 export async function GET(req: NextRequest) {
+  if (!EDITOR_ENABLED) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
   const { error } = await requireAdmin();
   if (error) return error;
 
@@ -108,6 +113,10 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  if (!EDITOR_ENABLED) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
   const { error } = await requireAdmin();
   if (error) return error;
 

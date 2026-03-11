@@ -10,6 +10,7 @@ interface FileEntry {
 }
 
 const IMAGE_EXTS = new Set(["jpg", "jpeg", "png", "gif", "webp", "svg", "ico", "avif"]);
+const ACCEPTED_UPLOAD_EXTENSIONS = ".jpg,.jpeg,.png,.gif,.webp,.svg,.ico,.avif,.pdf,.txt,.md,.csv,.json,.mp4,.webm,.mp3,.wav,.zip";
 
 function ext(name: string) {
   return name.includes(".") ? name.split(".").pop()!.toLowerCase() : "";
@@ -57,8 +58,6 @@ export default function FilesPage() {
   }
 
   const load = useCallback((targetDir: string) => {
-    setLoading(true);
-    setSelected(null);
     fetch(`/api/admin/files?dir=${encodeURIComponent(targetDir)}`)
       .then((r) => r.json())
       .then((d: { files: FileEntry[]; dir: string }) => {
@@ -69,6 +68,12 @@ export default function FilesPage() {
       .catch(() => setLoading(false));
   }, []);
 
+  function navigateTo(targetDir: string) {
+    setLoading(true);
+    setSelected(null);
+    load(targetDir);
+  }
+
   useEffect(() => { load(""); }, [load]);
 
   function navigate(entry: FileEntry) {
@@ -77,24 +82,38 @@ export default function FilesPage() {
       return;
     }
     const newDir = dir ? `${dir}/${entry.name}` : entry.name;
-    load(newDir);
+    navigateTo(newDir);
   }
 
   function navigateUp() {
     const parts = dir.split("/").filter(Boolean);
     parts.pop();
-    load(parts.join("/"));
+    navigateTo(parts.join("/"));
   }
 
-  async function deleteEntry(name: string) {
+  async function deleteEntry(name: string, isDir: boolean) {
     const fullPath = dir ? `${dir}/${name}` : name;
-    if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
-    const res = await fetch(`/api/admin/files?path=${encodeURIComponent(fullPath)}`, {
+
+    if (isDir) {
+      const typed = prompt(`Type the folder name to confirm deletion: ${name}`);
+      if (typed !== name) {
+        showToast("Folder deletion canceled: name did not match", false);
+        return;
+      }
+    } else {
+      if (!confirm(`Delete "${name}"?`)) return;
+    }
+
+    const permanent = confirm("Permanently delete? Click Cancel to move to trash instead.");
+    const confirmNameParam = isDir ? `&confirmName=${encodeURIComponent(name)}` : "";
+
+    const res = await fetch(`/api/admin/files?path=${encodeURIComponent(fullPath)}&permanent=${permanent}${confirmNameParam}`, {
       method: "DELETE",
     });
     if (res.ok) {
+      const data = await res.json() as { movedToTrash?: boolean };
       setFiles((f) => f.filter((x) => x.name !== name));
-      showToast(`"${name}" deleted`);
+      showToast(data.movedToTrash ? `"${name}" moved to trash` : `"${name}" permanently deleted`);
       if (selected === name) setSelected(null);
     } else {
       const data = await res.json() as { error?: string };
@@ -114,12 +133,19 @@ export default function FilesPage() {
     }
 
     const res = await fetch("/api/admin/upload", { method: "POST", body: formData });
-    const data = await res.json() as { error?: string; uploaded?: string[] };
+    const data = await res.json() as { error?: string; uploaded?: string[]; rejected?: string[] };
     if (res.ok) {
-      showToast(`Uploaded ${data.uploaded?.length ?? 0} file(s)`);
-      load(dir);
+      const uploadedCount = data.uploaded?.length ?? 0;
+      const rejectedCount = data.rejected?.length ?? 0;
+      showToast(
+        rejectedCount > 0
+          ? `Uploaded ${uploadedCount} file(s), rejected ${rejectedCount}`
+          : `Uploaded ${uploadedCount} file(s)`,
+      );
+      navigateTo(dir);
     } else {
-      showToast(data.error ?? "Upload failed", false);
+      const reason = data.rejected?.[0];
+      showToast(reason ? `${data.error ?? "Upload failed"}: ${reason}` : (data.error ?? "Upload failed"), false);
     }
     setUploading(false);
     e.target.value = "";
@@ -138,7 +164,7 @@ export default function FilesPage() {
       showToast(`Folder "${newFolder}" created`);
       setNewFolder("");
       setShowFolderForm(false);
-      load(dir);
+      navigateTo(dir);
     } else {
       const data = await res.json() as { error?: string };
       showToast(data.error ?? "Failed", false);
@@ -182,6 +208,7 @@ export default function FilesPage() {
             ref={fileInputRef}
             type="file"
             multiple
+            accept={ACCEPTED_UPLOAD_EXTENSIONS}
             className="hidden"
             onChange={handleUpload}
           />
@@ -210,6 +237,10 @@ export default function FilesPage() {
           </button>
         </div>
       </div>
+
+      <p className="text-xs" style={{ color: "#8B949E" }}>
+        Upload limits: max 20 files/request, max 10 MB each. Allowed: images, PDF, text/CSV/JSON/MD, MP4/WEBM, MP3/WAV, ZIP.
+      </p>
 
       {/* New folder form */}
       {showFolderForm && (
@@ -242,7 +273,7 @@ export default function FilesPage() {
       {/* Breadcrumb */}
       <div className="flex items-center gap-1.5 text-sm flex-wrap">
         <button
-          onClick={() => load("")}
+          onClick={() => navigateTo("")}
           className="font-semibold transition-colors"
           style={{ color: dir ? "#8B949E" : "#00F0FF" }}
         >
@@ -254,7 +285,7 @@ export default function FilesPage() {
             <span key={i} className="flex items-center gap-1.5">
               <span style={{ color: "#21262D" }}>/</span>
               <button
-                onClick={() => load(targetDir)}
+                onClick={() => navigateTo(targetDir)}
                 className="font-semibold transition-colors"
                 style={{ color: i === breadcrumbs.length - 1 ? "#00F0FF" : "#8B949E" }}
               >
@@ -335,7 +366,7 @@ export default function FilesPage() {
                     </td>
                     <td className="px-5 py-3.5 text-right" onClick={(e) => e.stopPropagation()}>
                       <button
-                        onClick={() => deleteEntry(f.name)}
+                        onClick={() => deleteEntry(f.name, f.isDir)}
                         className="w-7 h-7 flex items-center justify-center rounded-lg border ml-auto transition-all duration-150"
                         style={{ borderColor: "#21262D", color: "#8B949E" }}
                         onMouseEnter={(e) => {
@@ -392,6 +423,9 @@ export default function FilesPage() {
             <div className="flex flex-col gap-2">
               <p className="text-sm font-semibold break-all" style={{ color: "#E6EDF3" }}>
                 {selected}
+              </p>
+              <p className="text-xs" style={{ color: "#8B949E" }}>
+                Delete safety: folders require typed confirmation. Delete defaults to trash unless you choose permanent.
               </p>
               <div className="flex flex-col gap-1 text-xs" style={{ color: "#8B949E" }}>
                 <span>Size: {formatSize(selectedFile.size)}</span>

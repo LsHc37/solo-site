@@ -56,6 +56,40 @@ db.exec(`
   )
 `);
 
+// ── Auth security tables ─────────────────────────────────────────────────────
+db.exec(`
+  CREATE TABLE IF NOT EXISTS auth_events (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    event       TEXT    NOT NULL,
+    email       TEXT,
+    ip          TEXT,
+    success     INTEGER NOT NULL DEFAULT 0,
+    reason      TEXT    NOT NULL DEFAULT '',
+    created_at  TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+  )
+`);
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS auth_lockouts (
+    key_type     TEXT NOT NULL,
+    key_value    TEXT NOT NULL,
+    blocked_until TEXT NOT NULL,
+    reason       TEXT NOT NULL DEFAULT '',
+    updated_at   TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+    PRIMARY KEY (key_type, key_value)
+  )
+`);
+
+db.exec(`
+  CREATE INDEX IF NOT EXISTS idx_auth_events_email_created_at
+  ON auth_events (email, created_at)
+`);
+
+db.exec(`
+  CREATE INDEX IF NOT EXISTS idx_auth_events_ip_created_at
+  ON auth_events (ip, created_at)
+`);
+
 // ── Seed default site settings ────────────────────────────────────────────────
 const seedSettings: [string, string][] = [
   ["site_name", "Retro Gigz"],

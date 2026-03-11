@@ -1,9 +1,18 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 
+function getSafeCallbackUrl(value: string | null): string {
+  if (!value) return "/";
+  if (!value.startsWith("/") || value.startsWith("//")) return "/";
+  return value;
+}
+
 export default function LoginPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -14,9 +23,12 @@ export default function LoginPage() {
     setError(null);
     setLoading(true);
 
+    const callbackUrl = getSafeCallbackUrl(searchParams.get("callbackUrl"));
+
     const result = await signIn("credentials", {
       email: email.trim().toLowerCase(),
       password,
+      callbackUrl,
       redirect: false,
     });
 
@@ -25,7 +37,7 @@ export default function LoginPage() {
     if (result?.error) {
       setError("Invalid email or password. Please try again.");
     } else {
-      window.location.href = "/";
+      router.replace(callbackUrl);
     }
   }
 

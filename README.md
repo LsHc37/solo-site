@@ -16,6 +16,18 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+## Bootstrap first admin
+
+To create or promote your first admin account:
+
+```bash
+npm run admin:bootstrap -- --email you@example.com --password your-password
+```
+
+Notes:
+- If the user already exists, this command promotes them to `admin`.
+- If the user does not exist, the command creates an `admin` user (password is required).
+
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.

@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 
+const EDITOR_ENABLED = process.env.NODE_ENV !== "production";
+
 const NAV = [
   {
     href: "/admin",
@@ -117,7 +119,7 @@ export default function AdminSidebar({ userEmail }: Props) {
 
       {/* Nav */}
       <nav className="flex-1 px-3 py-4 flex flex-col gap-0.5 overflow-y-auto">
-        {NAV.map((item) => {
+        {NAV.filter((item) => EDITOR_ENABLED || !item.dev).map((item) => {
           const active = isActive(item.href, item.exact);
           return (
             <Link

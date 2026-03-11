@@ -1,7 +1,73 @@
 "use client";
+import { useEffect, useState } from "react";
+
+interface SiteState {
+  maintenanceMode: boolean;
+  announcementActive: boolean;
+  announcementText: string;
+  announcementColor: string;
+}
+
 export default function Home() {
+  const [siteState, setSiteState] = useState<SiteState>({
+    maintenanceMode: false,
+    announcementActive: false,
+    announcementText: "",
+    announcementColor: "#00F0FF",
+  });
+  const [siteStateLoaded, setSiteStateLoaded] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/public/site-state", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((data: SiteState) => {
+        setSiteState({
+          maintenanceMode: Boolean(data.maintenanceMode),
+          announcementActive: Boolean(data.announcementActive),
+          announcementText: data.announcementText ?? "",
+          announcementColor: data.announcementColor ?? "#00F0FF",
+        });
+      })
+      .finally(() => setSiteStateLoaded(true));
+  }, []);
+
+  if (!siteStateLoaded) {
+    return <main className="min-h-screen" style={{ backgroundColor: "#0D1117" }} />;
+  }
+
+  if (siteState.maintenanceMode) {
+    return (
+      <main
+        className="min-h-screen flex items-center justify-center px-6"
+        style={{ backgroundColor: "#0D1117", color: "#E6EDF3" }}
+      >
+        <div
+          className="w-full max-w-2xl rounded-2xl border p-10 text-center"
+          style={{ backgroundColor: "#161B22", borderColor: "#21262D" }}
+        >
+          <h1 className="text-3xl sm:text-4xl font-black tracking-tight">Maintenance Mode</h1>
+          <p className="mt-3 text-sm sm:text-base" style={{ color: "#8B949E" }}>
+            We are currently performing maintenance. Please check back shortly.
+          </p>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="min-h-screen" style={{ backgroundColor: "#0D1117", color: "#E6EDF3" }}>
+      {siteState.announcementActive && siteState.announcementText && (
+        <div
+          className="px-6 py-2.5 text-center text-sm font-semibold"
+          style={{
+            color: siteState.announcementColor,
+            backgroundColor: `${siteState.announcementColor}1A`,
+            borderBottom: `1px solid ${siteState.announcementColor}55`,
+          }}
+        >
+          {siteState.announcementText}
+        </div>
+      )}
 
       {/* ── Sticky Nav ───────────────────────────────────────────────── */}
       <nav

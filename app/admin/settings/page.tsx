@@ -61,7 +61,6 @@ export default function SettingsPage() {
   }
 
   const load = useCallback(() => {
-    setLoading(true);
     fetch("/api/admin/settings")
       .then((r) => r.json())
       .then((d: { settings: Settings }) => {
