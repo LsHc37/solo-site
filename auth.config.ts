@@ -11,6 +11,7 @@ export const authConfig: NextAuthConfig = {
       if (user) {
         token.id = user.id;
         token.role = (user as { role?: string }).role ?? "user";
+        token.adminPortalAccess = (user as { adminPortalAccess?: boolean }).adminPortalAccess === true;
       }
       return token;
     },
@@ -18,6 +19,7 @@ export const authConfig: NextAuthConfig = {
       if (session.user) {
         if (token.id) session.user.id = token.id as string;
         (session.user as { role?: string }).role = (token.role as string) ?? "user";
+        session.user.adminPortalAccess = token.adminPortalAccess === true;
       }
       return session;
     },

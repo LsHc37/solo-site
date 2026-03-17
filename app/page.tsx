@@ -1,417 +1,313 @@
 "use client";
+
+import Link from "next/link";
+import { Render, type Data } from "@measured/puck";
 import { useEffect, useState } from "react";
+import config from "../puck.config";
+import PublicNav from "@/components/PublicNav";
+import PublicFooter from "@/components/PublicFooter";
 
-interface SiteState {
-  maintenanceMode: boolean;
-  announcementActive: boolean;
-  announcementText: string;
-  announcementColor: string;
-}
+const emptyData: Data = { root: { props: { title: "" } }, content: [] };
 
-export default function Home() {
-  const [siteState, setSiteState] = useState<SiteState>({
-    maintenanceMode: false,
-    announcementActive: false,
-    announcementText: "",
-    announcementColor: "#00F0FF",
-  });
-  const [siteStateLoaded, setSiteStateLoaded] = useState(false);
-
-  useEffect(() => {
-    fetch("/api/public/site-state", { cache: "no-store" })
-      .then((r) => r.json())
-      .then((data: SiteState) => {
-        setSiteState({
-          maintenanceMode: Boolean(data.maintenanceMode),
-          announcementActive: Boolean(data.announcementActive),
-          announcementText: data.announcementText ?? "",
-          announcementColor: data.announcementColor ?? "#00F0FF",
-        });
-      })
-      .finally(() => setSiteStateLoaded(true));
-  }, []);
-
-  if (!siteStateLoaded) {
-    return <main className="min-h-screen" style={{ backgroundColor: "#0D1117" }} />;
-  }
-
-  if (siteState.maintenanceMode) {
-    return (
-      <main
-        className="min-h-screen flex items-center justify-center px-6"
-        style={{ backgroundColor: "#0D1117", color: "#E6EDF3" }}
-      >
-        <div
-          className="w-full max-w-2xl rounded-2xl border p-10 text-center"
-          style={{ backgroundColor: "#161B22", borderColor: "#21262D" }}
-        >
-          <h1 className="text-3xl sm:text-4xl font-black tracking-tight">Maintenance Mode</h1>
-          <p className="mt-3 text-sm sm:text-base" style={{ color: "#8B949E" }}>
-            We are currently performing maintenance. Please check back shortly.
-          </p>
-        </div>
-      </main>
-    );
-  }
-
+function HomeHero() {
   return (
-    <main className="min-h-screen" style={{ backgroundColor: "#0D1117", color: "#E6EDF3" }}>
-      {siteState.announcementActive && siteState.announcementText && (
+    <section className="relative overflow-hidden px-6 py-24 sm:py-32">
+      {/* Background glow */}
+      <div className="pointer-events-none absolute inset-0 -z-10">
         <div
-          className="px-6 py-2.5 text-center text-sm font-semibold"
-          style={{
-            color: siteState.announcementColor,
-            backgroundColor: `${siteState.announcementColor}1A`,
-            borderBottom: `1px solid ${siteState.announcementColor}55`,
-          }}
-        >
-          {siteState.announcementText}
-        </div>
-      )}
-
-      {/* ── Sticky Nav ───────────────────────────────────────────────── */}
-      <nav
-        className="sticky top-0 z-50 flex items-center justify-between px-6 py-4"
-        style={{
-          backgroundColor: "#0D1117",
-          borderBottom: "1px solid #161B22",
-          backdropFilter: "blur(12px)",
-        }}
-      >
-        <span className="text-sm font-black tracking-widest" style={{ color: "#E6EDF3" }}>
-          RETRO GIGZ
-        </span>
-        <a
-          href="/login"
-          className="text-xs font-semibold px-4 py-2 rounded-lg transition-all duration-200 tracking-wide"
-          style={{
-            border: "1px solid #00F0FF",
-            color: "#00F0FF",
-          }}
-          onMouseEnter={(e) => {
-            (e.currentTarget as HTMLElement).style.backgroundColor = "#00F0FF15";
-            (e.currentTarget as HTMLElement).style.boxShadow = "0 0 16px rgba(0,240,255,0.2)";
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLElement).style.backgroundColor = "transparent";
-            (e.currentTarget as HTMLElement).style.boxShadow = "none";
-          }}
-        >
-          Account
-        </a>
-      </nav>
-
-      {/* ── Hero Section ─────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden">
-        {/* Subtle radial glow behind headline */}
-        <div
-          className="pointer-events-none absolute inset-0"
-          style={{
-            background:
-              "radial-gradient(ellipse 70% 50% at 50% 0%, rgba(0,240,255,0.07) 0%, transparent 70%)",
-          }}
+          className="absolute left-1/2 top-0 h-[400px] w-[700px] -translate-x-1/2 rounded-full blur-[140px] opacity-10"
+          style={{ backgroundColor: "#00F0FF" }}
         />
-        <div className="relative max-w-5xl mx-auto px-6 pt-32 pb-28 text-center flex flex-col items-center gap-6">
-          {/* Eyebrow badge */}
-          <div
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border text-xs font-semibold uppercase tracking-widest"
-            style={{ borderColor: "#00F0FF33", color: "#00F0FF", backgroundColor: "#00F0FF0D" }}
+      </div>
+
+      <div className="mx-auto max-w-5xl">
+        <div
+          className="mb-6 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-widest"
+          style={{ borderColor: "#00F0FF33", color: "#00F0FF", backgroundColor: "#00F0FF0A" }}
+        >
+          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-current" />
+          Digital Independence
+        </div>
+
+        <h1
+          className="text-5xl font-black leading-none tracking-tight sm:text-6xl lg:text-7xl"
+          style={{ color: "#E6EDF3" }}
+        >
+          Built{" "}
+          <span
+            style={{
+              background: "linear-gradient(135deg, #00F0FF, #60A5FA)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+            }}
           >
-            <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: "#00F0FF" }} />
-            Master Technology &amp; Software Publisher
-          </div>
+            Different.
+          </span>
+        </h1>
 
-          {/* Headline */}
-          <h1 className="text-6xl sm:text-7xl xl:text-8xl font-black leading-none tracking-tight">
-            Digital<br />
-            <span style={{ color: "#00F0FF" }}>Independence.</span>
-          </h1>
+        <p className="mt-6 max-w-2xl text-lg leading-relaxed sm:text-xl" style={{ color: "#8B949E" }}>
+          Privacy-first apps, independent games, and tactical apparel. We build tools that
+          work for you — not corporations.
+        </p>
 
-          {/* Subheadline */}
-          <p
-            className="text-lg sm:text-xl leading-relaxed max-w-2xl"
-            style={{ color: "#8B949E" }}
-          >
-            A master publisher building privacy-first applications, independent games, and tactical
-            apparel. We build software that respects your silence.
-          </p>
-
-          {/* CTA */}
-          <a
-            href="#divisions"
-            className="mt-2 inline-flex items-center gap-2 px-7 py-3.5 rounded-xl font-semibold text-sm transition-all duration-200"
+        <div className="mt-9 flex flex-wrap gap-3">
+          <Link
+            href="/solo"
+            className="rounded-xl px-6 py-3 text-sm font-bold transition-all duration-200"
             style={{
               backgroundColor: "#00F0FF",
               color: "#0D1117",
-              boxShadow: "0 0 24px rgba(0,240,255,0.4)",
+              boxShadow: "0 0 24px rgba(0,240,255,0.35)",
             }}
           >
-            Explore Our Divisions
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
-              <path d="M5 12h14M13 6l6 6-6 6" />
-            </svg>
-          </a>
-        </div>
-      </section>
-
-      {/* ── Privacy Pledge ─────────────────────────────────────────────── */}
-      <section className="max-w-5xl mx-auto px-6 pb-20">
-        <div
-          className="rounded-2xl border p-10 flex flex-col gap-8"
-          style={{ backgroundColor: "#161B22", borderColor: "#00F0FF22", boxShadow: "0 0 48px rgba(0,240,255,0.05)" }}
-        >
-          {/* Heading */}
-          <div className="flex flex-col gap-2 text-center">
-            <div className="flex justify-center mb-2">
-              <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ backgroundColor: "#0D1117", border: "1px solid #00F0FF33" }}>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#00F0FF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-7 h-7">
-                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                  <path d="M9 12l2 2 4-4" />
-                </svg>
-              </div>
-            </div>
-            <h2 className="text-3xl sm:text-4xl font-black tracking-tight" style={{ color: "#E6EDF3" }}>
-              Your Data. Your Device. <span style={{ color: "#00F0FF" }}>Always.</span>
-            </h2>
-            <p className="text-base leading-relaxed max-w-2xl mx-auto" style={{ color: "#8B949E" }}>
-              Retro Gigz is committed to the absolute protection of user data. This is not a policy
-              — it is the foundation every product we build is engineered on.
-            </p>
-          </div>
-
-          {/* Three pillars */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-2">
-            {/* Pillar 1 */}
-            <div className="flex flex-col gap-3 p-6 rounded-xl" style={{ backgroundColor: "#0D1117", border: "1px solid #21262D" }}>
-              <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ backgroundColor: "#00F0FF10", border: "1px solid #00F0FF33" }}>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#00F0FF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
-                  <ellipse cx="12" cy="5" rx="9" ry="3" />
-                  <path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5" />
-                  <path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3" />
-                </svg>
-              </div>
-              <h3 className="text-sm font-bold tracking-tight" style={{ color: "#E6EDF3" }}>Data Stays on Our Servers</h3>
-              <p className="text-xs leading-relaxed" style={{ color: "#8B949E" }}>
-                Any account data you choose to store with us lives exclusively on Retro Gigz
-                infrastructure. It is never sold, shared, or transmitted to third parties — ever.
-              </p>
-            </div>
-
-            {/* Pillar 2 */}
-            <div className="flex flex-col gap-3 p-6 rounded-xl" style={{ backgroundColor: "#0D1117", border: "1px solid #21262D" }}>
-              <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ backgroundColor: "#00F0FF10", border: "1px solid #00F0FF33" }}>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#00F0FF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
-                  <rect x="5" y="2" width="14" height="20" rx="2" />
-                  <line x1="12" y1="18" x2="12" y2="18" strokeWidth="2.5" />
-                  <line x1="9" y1="7" x2="15" y2="7" />
-                  <line x1="9" y1="11" x2="15" y2="11" />
-                </svg>
-              </div>
-              <h3 className="text-sm font-bold tracking-tight" style={{ color: "#E6EDF3" }}>100% Offline Apps</h3>
-              <p className="text-xs leading-relaxed" style={{ color: "#8B949E" }}>
-                All Retro Gigz applications are built to run entirely on your device without an
-                internet connection. No background sync. No cloud dependency. No hidden uploads.
-              </p>
-            </div>
-
-            {/* Pillar 3 */}
-            <div className="flex flex-col gap-3 p-6 rounded-xl" style={{ backgroundColor: "#0D1117", border: "1px solid #21262D" }}>
-              <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ backgroundColor: "#00F0FF10", border: "1px solid #00F0FF33" }}>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#00F0FF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
-                  <circle cx="12" cy="12" r="10" />
-                  <line x1="2" y1="12" x2="22" y2="12" />
-                  <path d="M12 2a15.3 15.3 0 0 1 0 20M12 2a15.3 15.3 0 0 0 0 20" />
-                  <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" strokeDasharray="2 3" />
-                </svg>
-              </div>
-              <h3 className="text-sm font-bold tracking-tight" style={{ color: "#E6EDF3" }}>Zero Data Leaving Your Device</h3>
-              <p className="text-xs leading-relaxed" style={{ color: "#8B949E" }}>
-                Your personal data — habits, health metrics, financials, usage patterns — never
-                leaves your device under any circumstance. What happens on your phone stays on your phone.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Division Cards ────────────────────────────────────────────── */}
-      <section id="divisions" className="max-w-7xl mx-auto px-6 pb-28">
-        <div className="text-center mb-14">
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight" style={{ color: "#8B949E" }}>
-            Three divisions. One mission.
-          </h2>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-
-          {/* ── Division 1: Solo Productivity ── */}
-          <a
-            href="/solo"
-            className="group flex flex-col gap-6 p-8 rounded-2xl border transition-all duration-300 hover:-translate-y-1"
-            style={{
-              backgroundColor: "#161B22",
-              borderColor: "#21262D",
-            }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.borderColor = "#00F0FF55";
-              (e.currentTarget as HTMLElement).style.boxShadow = "0 0 32px rgba(0,240,255,0.1)";
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.borderColor = "#21262D";
-              (e.currentTarget as HTMLElement).style.boxShadow = "none";
-            }}
+            Explore Solo App
+          </Link>
+          <Link
+            href="/games"
+            className="rounded-xl border px-6 py-3 text-sm font-bold transition-all duration-200"
+            style={{ borderColor: "#30363D", color: "#E6EDF3" }}
           >
-            <div
-              className="w-12 h-12 rounded-xl flex items-center justify-center"
-              style={{ backgroundColor: "#0D1117" }}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#00F0FF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
-                <rect x="3" y="3" width="7" height="7" rx="1" />
-                <rect x="14" y="3" width="7" height="7" rx="1" />
-                <rect x="3" y="14" width="7" height="7" rx="1" />
-                <rect x="14" y="14" width="7" height="7" rx="1" />
-              </svg>
-            </div>
-            <div className="flex flex-col gap-2 flex-1">
-              <div className="flex items-center justify-between">
-                <h3 className="text-xl font-bold" style={{ color: "#E6EDF3" }}>Solo Productivity</h3>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#00F0FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <path d="M5 12h14M13 6l6 6-6 6" />
-                </svg>
-              </div>
-              <p className="text-sm leading-relaxed" style={{ color: "#8B949E" }}>
-                Privacy-first mobile apps that run 100% offline. AI personal trainer, food scanner,
-                deep work timer, habit tracker, and budget vault — all in one device-locked suite.
-              </p>
-            </div>
-            <div
-              className="text-xs font-mono px-3 py-1.5 rounded-lg self-start"
-              style={{ backgroundColor: "#0D1117", color: "#00F0FF99", border: "1px solid #21262D" }}
-            >
-              retrogigz.com/solo →
-            </div>
-          </a>
-
-          {/* ── Division 2: Retro Gigz Games ── */}
-          <div
-            className="group flex flex-col gap-6 p-8 rounded-2xl border transition-all duration-300 hover:-translate-y-1 cursor-default"
-            style={{ backgroundColor: "#161B22", borderColor: "#21262D" }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.borderColor = "#00F0FF55";
-              (e.currentTarget as HTMLElement).style.boxShadow = "0 0 32px rgba(0,240,255,0.1)";
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.borderColor = "#21262D";
-              (e.currentTarget as HTMLElement).style.boxShadow = "none";
-            }}
+            View Games
+          </Link>
+          <Link
+            href="/community"
+            className="rounded-xl border px-6 py-3 text-sm font-bold transition-all duration-200"
+            style={{ borderColor: "#30363D", color: "#8B949E" }}
           >
-            <div
-              className="w-12 h-12 rounded-xl flex items-center justify-center"
-              style={{ backgroundColor: "#0D1117" }}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#00F0FF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
-                <rect x="2" y="6" width="20" height="12" rx="3" />
-                <path d="M6 12h4M8 10v4" />
-                <circle cx="15" cy="11" r="1" fill="#00F0FF" stroke="none" />
-                <circle cx="18" cy="13" r="1" fill="#00F0FF" stroke="none" />
-              </svg>
-            </div>
-            <div className="flex flex-col gap-2 flex-1">
-              <div className="flex items-center justify-between">
-                <h3 className="text-xl font-bold" style={{ color: "#E6EDF3" }}>Retro Gigz Games</h3>
-                <span
-                  className="text-xs font-semibold px-2 py-0.5 rounded-full"
-                  style={{ backgroundColor: "#00F0FF15", color: "#00F0FF", border: "1px solid #00F0FF33" }}
-                >
-                  Coming Soon
-                </span>
-              </div>
-              <p className="text-sm leading-relaxed" style={{ color: "#8B949E" }}>
-                Independent game studio focused on tactical and immersive experiences. Our flagship
-                title <span style={{ color: "#E6EDF3", fontWeight: 600 }}>Vanguard</span> is a
-                hardcore tactical shooter built for players who demand depth, strategy, and
-                replayability.
-              </p>
-            </div>
-            <div
-              className="text-xs font-mono px-3 py-1.5 rounded-lg self-start"
-              style={{ backgroundColor: "#0D1117", color: "#00F0FF99", border: "1px solid #21262D" }}
-            >
-              FLAGSHIP: VANGUARD
-            </div>
-          </div>
-
-          {/* ── Division 3: Apparel Division ── */}
-          <a
-            href="https://www.dmclothingandapparel.com/home"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group flex flex-col gap-6 p-8 rounded-2xl border transition-all duration-300 hover:-translate-y-1"
-            style={{ backgroundColor: "#161B22", borderColor: "#21262D" }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.borderColor = "#00F0FF55";
-              (e.currentTarget as HTMLElement).style.boxShadow = "0 0 32px rgba(0,240,255,0.1)";
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.borderColor = "#21262D";
-              (e.currentTarget as HTMLElement).style.boxShadow = "none";
-            }}
-          >
-            <div
-              className="w-12 h-12 rounded-xl flex items-center justify-center"
-              style={{ backgroundColor: "#0D1117" }}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#00F0FF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
-                <path d="M20.38 3.46L16 2l-4 4-4-4-4.38 1.46A2 2 0 0 0 2 5.36V22h20V5.36a2 2 0 0 0-1.62-1.9z" />
-              </svg>
-            </div>
-            <div className="flex flex-col gap-2 flex-1">
-              <div className="flex items-center justify-between">
-                <h3 className="text-xl font-bold" style={{ color: "#E6EDF3" }}>Apparel Division</h3>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#00F0FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <path d="M5 12h14M13 6l6 6-6 6" />
-                </svg>
-              </div>
-              <p className="text-sm leading-relaxed" style={{ color: "#8B949E" }}>
-                Tactical and minimalist streetwear for the digitally sovereign. Designed for
-                operators who move quietly, think independently, and dress with intent. No logos. No noise.
-              </p>
-            </div>
-            <div
-              className="text-xs font-mono px-3 py-1.5 rounded-lg self-start"
-              style={{ backgroundColor: "#0D1117", color: "#00F0FF99", border: "1px solid #21262D" }}
-            >
-              COLLECTION: DROP_001
-            </div>
-          </a>
-
+            Join Community
+          </Link>
         </div>
-      </section>
+      </div>
+    </section>
+  );
+}
 
-      {/* ── Footer ───────────────────────────────────────────────────── */}
-      <footer style={{ borderTop: "1px solid #21262D" }}>
-        <div className="max-w-7xl mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-sm font-semibold tracking-wide" style={{ color: "#E6EDF3" }}>
-            RETRO GIGZ
-            <span className="ml-3 font-normal" style={{ color: "#8B949E" }}>
-              &copy; {new Date().getFullYear()} All rights reserved.
-            </span>
-          </p>
-          <nav className="flex items-center gap-6">
-            {["FAQ", "Contact & Support", "Privacy Policy"].map((label) => (
-              <a
-                key={label}
-                href="#"
-                className="text-sm transition-colors duration-150 hover:text-white"
-                style={{ color: "#8B949E" }}
+function DivisionsSection() {
+  const cards = [
+    {
+      href: "/solo",
+      accent: "#00F0FF",
+      tag: "Solo App",
+      title: "100% Offline & Private",
+      body: "The all-in-one life OS. AI trainer, food scanner, and budget vault. Your data never leaves your device.",
+      cta: "Learn more →",
+      icon: (
+        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="#00F0FF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="5" y="2" width="14" height="20" rx="2" />
+          <path d="M12 18h.01" />
+        </svg>
+      ),
+    },
+    {
+      href: "/games",
+      accent: "#A78BFA",
+      tag: "Games",
+      title: "Vanguard: Tactical Shooter",
+      body: "Our flagship indie game — built for depth, replayability, and performance-first gameplay. In active development.",
+      cta: "See progress →",
+      icon: (
+        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="6" y1="12" x2="10" y2="12" />
+          <line x1="8" y1="10" x2="8" y2="14" />
+          <circle cx="15.5" cy="11.5" r=".5" fill="#A78BFA" />
+          <circle cx="17.5" cy="13.5" r=".5" fill="#A78BFA" />
+          <rect x="2" y="6" width="20" height="12" rx="2" />
+        </svg>
+      ),
+    },
+    {
+      href: "/community",
+      accent: "#34D399",
+      tag: "Community",
+      title: "Questions & Reviews",
+      body: "Ask questions, share feedback, and help shape the future of what we build.",
+      cta: "Join the discussion →",
+      icon: (
+        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="#34D399" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+        </svg>
+      ),
+    },
+  ];
+
+  return (
+    <section className="px-6 py-16">
+      <div className="mx-auto max-w-5xl">
+        <h2 className="mb-8 text-3xl font-black tracking-tight" style={{ color: "#E6EDF3" }}>
+          What We Build
+        </h2>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          {cards.map((card) => (
+            <Link
+              key={card.href}
+              href={card.href}
+              className="group flex flex-col gap-4 rounded-2xl border p-6 transition-all duration-200"
+              style={{ backgroundColor: "#161B22", borderColor: "#21262D" }}
+            >
+              <div
+                className="flex h-10 w-10 items-center justify-center rounded-xl"
+                style={{
+                  backgroundColor: `${card.accent}12`,
+                  border: `1px solid ${card.accent}33`,
+                }}
               >
-                {label}
-              </a>
-            ))}
-          </nav>
+                {card.icon}
+              </div>
+              <div>
+                <p className="mb-1 text-xs font-bold uppercase tracking-widest" style={{ color: card.accent }}>
+                  {card.tag}
+                </p>
+                <h3 className="mb-2 text-base font-bold" style={{ color: "#E6EDF3" }}>
+                  {card.title}
+                </h3>
+                <p className="text-sm leading-relaxed" style={{ color: "#8B949E" }}>
+                  {card.body}
+                </p>
+              </div>
+              <p className="mt-auto text-xs font-semibold" style={{ color: card.accent }}>
+                {card.cta}
+              </p>
+            </Link>
+          ))}
         </div>
-      </footer>
+      </div>
+    </section>
+  );
+}
 
-    </main>
+function PrivacySection() {
+  const pillars = [
+    {
+      title: "No Cloud by Default",
+      body: "We build offline-first. Your data stays on your device unless you explicitly choose to share it.",
+    },
+    {
+      title: "Open Principles",
+      body: "No hidden trackers, no background uploads, no selling your data. Full stop.",
+    },
+    {
+      title: "Built to Last",
+      body: "Software that doesn't degrade when subscriptions end or servers go down. It's yours.",
+    },
+  ];
+
+  return (
+    <section className="px-6 py-16">
+      <div className="mx-auto max-w-5xl">
+        <div
+          className="rounded-2xl border p-8 sm:p-12"
+          style={{ backgroundColor: "#161B22", borderColor: "#21262D" }}
+        >
+          <div
+            className="mb-6 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-widest"
+            style={{ borderColor: "#00F0FF33", color: "#00F0FF", backgroundColor: "#00F0FF0A" }}
+          >
+            Privacy First
+          </div>
+          <h2 className="mb-3 text-3xl font-black tracking-tight sm:text-4xl" style={{ color: "#E6EDF3" }}>
+            Privacy is the default,
+            <br />
+            not a feature.
+          </h2>
+          <p className="mb-10 text-base" style={{ color: "#8B949E" }}>
+            Every product we ship is designed from the ground up with your privacy in mind.
+          </p>
+          <div className="grid grid-cols-1 gap-8 sm:grid-cols-3">
+            {pillars.map((p) => (
+              <div key={p.title}>
+                <div
+                  className="mb-3 flex h-8 w-8 items-center justify-center rounded-lg"
+                  style={{ backgroundColor: "#00F0FF12", border: "1px solid #00F0FF33" }}
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#00F0FF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                  </svg>
+                </div>
+                <h3 className="mb-1.5 text-sm font-bold" style={{ color: "#E6EDF3" }}>
+                  {p.title}
+                </h3>
+                <p className="text-sm leading-relaxed" style={{ color: "#8B949E" }}>
+                  {p.body}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function CommunityCTA() {
+  return (
+    <section className="px-6 pb-24 pt-8">
+      <div className="mx-auto max-w-5xl">
+        <div
+          className="rounded-2xl border p-8 text-center sm:p-12"
+          style={{ backgroundColor: "#161B22", borderColor: "#21262D" }}
+        >
+          <h2 className="mb-3 text-3xl font-black" style={{ color: "#E6EDF3" }}>
+            Become part of the mission.
+          </h2>
+          <p className="mx-auto mb-6 max-w-md text-base" style={{ color: "#8B949E" }}>
+            Ask questions, share reviews, and help shape what we build next.
+          </p>
+          <Link
+            href="/community"
+            className="inline-flex rounded-xl px-6 py-3 text-sm font-bold"
+            style={{ backgroundColor: "#00F0FF", color: "#0D1117" }}
+          >
+            Join the Community
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export default function HomePage() {
+  const [data, setData] = useState<Data>(emptyData);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/public/puck", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : Promise.reject()))
+      .then((payload: { data?: Data }) => {
+        if (payload?.data) setData(payload.data);
+      })
+      .catch(() => {})
+      .finally(() => setLoaded(true));
+  }, []);
+
+  const hasContent = Array.isArray(data.content) && data.content.length > 0;
+
+  return (
+    <div style={{ backgroundColor: "#0D1117", minHeight: "100vh", color: "#E6EDF3" }}>
+      <PublicNav />
+
+      {!loaded ? (
+        <div className="mx-auto max-w-5xl animate-pulse space-y-4 px-6 py-16">
+          <div className="h-20 rounded-2xl" style={{ backgroundColor: "#161B22" }} />
+          <div className="h-64 rounded-2xl" style={{ backgroundColor: "#161B22" }} />
+          <div className="h-40 rounded-2xl" style={{ backgroundColor: "#161B22" }} />
+        </div>
+      ) : hasContent ? (
+        <main className="mx-auto max-w-5xl px-4 py-8">
+          <Render config={config} data={data} />
+        </main>
+      ) : (
+        <main>
+          <HomeHero />
+          <DivisionsSection />
+          <PrivacySection />
+          <CommunityCTA />
+        </main>
+      )}
+
+      <PublicFooter />
+    </div>
   );
 }

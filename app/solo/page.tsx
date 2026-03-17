@@ -1,12 +1,21 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
+import PublicNav from "@/components/PublicNav";
+import PublicFooter from "@/components/PublicFooter";
 
 interface SiteState {
   maintenanceMode: boolean;
   announcementActive: boolean;
   announcementText: string;
   announcementColor: string;
+  siteName: string;
+  tagline: string;
+  primaryColor: string;
+  bgColor: string;
+  contactEmail: string;
+  contentBlocks: Record<string, string>;
 }
 
 export default function SoloPage() {
@@ -15,6 +24,12 @@ export default function SoloPage() {
     announcementActive: false,
     announcementText: "",
     announcementColor: "#00F0FF",
+    siteName: "Retro Gigz",
+    tagline: "Digital Independence.",
+    primaryColor: "#00F0FF",
+    bgColor: "#0D1117",
+    contactEmail: "",
+    contentBlocks: {},
   });
   const [siteStateLoaded, setSiteStateLoaded] = useState(false);
 
@@ -27,36 +42,60 @@ export default function SoloPage() {
           announcementActive: Boolean(data.announcementActive),
           announcementText: data.announcementText ?? "",
           announcementColor: data.announcementColor ?? "#00F0FF",
+          siteName: data.siteName ?? "Retro Gigz",
+          tagline: data.tagline ?? "Digital Independence.",
+          primaryColor: data.primaryColor ?? "#00F0FF",
+          bgColor: data.bgColor ?? "#0D1117",
+          contactEmail: data.contactEmail ?? "",
+          contentBlocks: data.contentBlocks ?? {},
         });
       })
       .finally(() => setSiteStateLoaded(true));
   }, []);
 
   if (!siteStateLoaded) {
-    return <main className="min-h-screen" style={{ backgroundColor: "#0D1117" }} />;
+    return (
+      <div style={{ backgroundColor: "#0D1117", minHeight: "100vh" }}>
+        <PublicNav />
+      </div>
+    );
   }
 
   if (siteState.maintenanceMode) {
     return (
-      <main
-        className="min-h-screen flex items-center justify-center px-6"
-        style={{ backgroundColor: "#0D1117", color: "#E6EDF3" }}
-      >
-        <div
-          className="w-full max-w-2xl rounded-2xl border p-10 text-center"
-          style={{ backgroundColor: "#161B22", borderColor: "#21262D" }}
-        >
-          <h1 className="text-3xl sm:text-4xl font-black tracking-tight">Maintenance Mode</h1>
-          <p className="mt-3 text-sm sm:text-base" style={{ color: "#8B949E" }}>
-            We are currently performing maintenance. Please check back shortly.
-          </p>
-        </div>
-      </main>
+      <div style={{ backgroundColor: "#0D1117", minHeight: "100vh", color: "#E6EDF3" }}>
+        <PublicNav />
+        <main className="flex items-center justify-center px-6 py-32">
+          <div
+            className="w-full max-w-2xl rounded-2xl border p-10 text-center"
+            style={{ backgroundColor: "#161B22", borderColor: "#21262D" }}
+          >
+            <h1 className="text-3xl sm:text-4xl font-black tracking-tight">Maintenance Mode</h1>
+            <p className="mt-3 text-sm sm:text-base" style={{ color: "#8B949E" }}>
+              We are currently performing maintenance. Please check back shortly.
+            </p>
+          </div>
+        </main>
+        <PublicFooter />
+      </div>
     );
   }
 
+  const getBlock = (key: string, fallback: string) => {
+    const value = siteState.contentBlocks[key];
+    return value && value.trim() ? value : fallback;
+  };
+
+  const siteName = getBlock("site_name", siteState.siteName || "Retro Gigz");
+  const soloHeroTitle = getBlock("solo_hero_title", "100% Offline\n& Private");
+  const soloHeroSubheadline = getBlock(
+    "solo_hero_subheadline",
+    "The ultimate all-in-one life operating system. AI trainer, food scanner, and budget vault. Your data never leaves your device.",
+  );
+
   return (
-    <main className="min-h-screen" style={{ backgroundColor: "#0D1117", color: "#E6EDF3" }}>
+    <div style={{ backgroundColor: "#0D1117", minHeight: "100vh", color: "#E6EDF3" }}>
+      <PublicNav />
       {siteState.announcementActive && siteState.announcementText && (
         <div
           className="px-6 py-2.5 text-center text-sm font-semibold"
@@ -75,18 +114,22 @@ export default function SoloPage() {
         {/* Left Column */}
         <div className="flex-1 flex flex-col gap-6">
           <h1 className="text-5xl sm:text-6xl xl:text-7xl font-black leading-tight tracking-tight">
-            100% Offline<br />&amp; Private
+            {soloHeroTitle.split("\n").map((part, index, arr) => (
+              <span key={index}>
+                {part}
+                {index < arr.length - 1 && <br />}
+              </span>
+            ))}
           </h1>
 
           <p className="text-lg sm:text-xl leading-relaxed max-w-xl" style={{ color: "#8B949E" }}>
-            The ultimate all-in-one life operating system. AI trainer, food scanner, and budget vault.
-            Your data never leaves your device.
+            {soloHeroSubheadline}
           </p>
 
           {/* CTA Buttons */}
           <div className="flex flex-wrap gap-4 mt-2">
-            <a
-              href="#"
+            <Link
+              href="/contact?topic=ios-beta"
               className="flex items-center gap-3 px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-200 border"
               style={{
                 backgroundColor: "#00F0FF",
@@ -98,11 +141,11 @@ export default function SoloPage() {
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
                 <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" />
               </svg>
-              Download on App Store
-            </a>
+              Join iOS Waitlist
+            </Link>
 
-            <a
-              href="#"
+            <Link
+              href="/contact?topic=android-beta"
               className="flex items-center gap-3 px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-200 border"
               style={{
                 backgroundColor: "transparent",
@@ -114,8 +157,8 @@ export default function SoloPage() {
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
                 <path d="M3.18 23.76c.3.17.64.22.97.14l12.54-7.24-2.79-2.79-10.72 9.89zM.87 1.46C.34 1.96 0 2.75 0 3.8v16.4c0 1.05.34 1.84.87 2.34l.12.11 9.19-9.19v-.22L1 1.35l-.13.11zM20.93 10.27l-2.63-1.52-3.12 3.12 3.12 3.12 2.65-1.53c.76-.44.76-1.75-.02-2.19zM3.18.24l10.72 9.89-2.79 2.79L1.15.68C1.46.36 1.88.07 3.18.24z" />
               </svg>
-              Get it on Google Play
-            </a>
+              Join Android Waitlist
+            </Link>
           </div>
         </div>
 
@@ -300,17 +343,7 @@ export default function SoloPage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer style={{ borderTop: "1px solid #21262D" }}>
-        <div className="max-w-7xl mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-sm" style={{ color: "#8B949E" }}>&copy; {new Date().getFullYear()} Retro Gigz. All rights reserved.</p>
-          <nav className="flex items-center gap-6">
-            {["FAQ", "Contact & Support", "Privacy Policy"].map((label) => (
-              <a key={label} href="#" className="text-sm transition-colors duration-150 hover:text-white" style={{ color: "#8B949E" }}>{label}</a>
-            ))}
-          </nav>
-        </div>
-      </footer>
-    </main>
+      <PublicFooter />
+    </div>
   );
 }

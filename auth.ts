@@ -4,6 +4,8 @@ import bcrypt from "bcryptjs";
 import db from "@/lib/db";
 import { authConfig } from "@/auth.config";
 
+const ADMIN_PORTAL_CODE = process.env.ADMIN_PORTAL_CODE ?? "1357";
+
 interface DbUser {
   id: number;
   email: string;
@@ -119,10 +121,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
+        adminPortalCode: { label: "Admin Portal Code", type: "password" },
+        adminLoginIntent: { label: "Admin Login Intent", type: "text" },
+        createAccountConsent: { label: "Create Account Consent", type: "text" },
       },
       async authorize(credentials, request) {
         const email = (credentials?.email as string | undefined)?.trim().toLowerCase();
         const password = credentials?.password as string | undefined;
+        const adminPortalCode = (credentials?.adminPortalCode as string | undefined)?.trim();
+        const adminLoginIntent = credentials?.adminLoginIntent === "true";
+        const createAccountConsent = credentials?.createAccountConsent === "true";
         const ip = getClientIp(request);
 
         if (!email || !password) {
@@ -148,6 +156,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           .get(email) as DbUser | undefined;
 
         if (!existing) {
+          if (!createAccountConsent) {
+            logAuthEvent("login_failed", email, ip, false, "missing_signup_consent");
+            await slowDown();
+            return null;
+          }
+
           const ipFailures = recentFailureCountByIp(ip);
           if (ipFailures >= IP_FAILURE_THRESHOLD) {
             setLock("ip", ip, "too_many_failures_ip");
@@ -169,6 +183,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             id: String(result.lastInsertRowid),
             email,
             role: "user",
+            adminPortalAccess: false,
           };
         }
 
@@ -191,13 +206,37 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return null;
         }
 
+        const isAdmin = (existing.role ?? "user") === "admin";
+        const wantsAdminPortal = adminLoginIntent || Boolean(adminPortalCode);
+
+        if (wantsAdminPortal) {
+          if (!isAdmin) {
+            logAuthEvent("admin_login_failed", email, ip, false, "non_admin_account");
+            await slowDown();
+            return null;
+          }
+
+          if (adminPortalCode !== ADMIN_PORTAL_CODE) {
+            logAuthEvent("admin_login_failed", email, ip, false, "invalid_portal_code");
+            await slowDown();
+            return null;
+          }
+        }
+
         clearLocks(email, ip);
-        logAuthEvent("login_success", email, ip, true, "");
+        logAuthEvent(
+          wantsAdminPortal ? "admin_login_success" : "login_success",
+          email,
+          ip,
+          true,
+          wantsAdminPortal ? "portal_code_verified" : "",
+        );
 
         return {
           id: String(existing.id),
           email: existing.email,
           role: existing.role ?? "user",
+          adminPortalAccess: isAdmin && wantsAdminPortal,
         };
       },
     }),

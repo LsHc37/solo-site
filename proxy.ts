@@ -1,5 +1,6 @@
 import NextAuth from "next-auth";
 import { authConfig } from "@/auth.config";
+import { getAdminLoginPath, hasAdminPortalAccess } from "@/lib/admin-portal";
 
 // Edge-safe: uses only authConfig which has no Node.js-only imports.
 const { auth } = NextAuth(authConfig);
@@ -10,14 +11,9 @@ export default auth((req) => {
   if (pathname.startsWith("/admin")) {
     const user = req.auth?.user;
 
-    if (!user) {
-      const loginUrl = new URL("/login", req.url);
-      loginUrl.searchParams.set("callbackUrl", pathname);
+    if (!hasAdminPortalAccess(user)) {
+      const loginUrl = new URL(getAdminLoginPath(pathname), req.url);
       return Response.redirect(loginUrl);
-    }
-
-    if ((user as { role?: string }).role !== "admin") {
-      return Response.redirect(new URL("/?unauthorized=1", req.url));
     }
   }
 });

@@ -7,6 +7,10 @@ interface Settings {
   tagline: string;
   primary_color: string;
   bg_color: string;
+  surface_color: string;
+  text_color: string;
+  muted_color: string;
+  nav_account_label: string;
   maintenance_mode: string;
   announcement_active: string;
   announcement_text: string;
@@ -21,6 +25,10 @@ const DEFAULT: Settings = {
   tagline: "",
   primary_color: "#00F0FF",
   bg_color: "#0D1117",
+  surface_color: "#161B22",
+  text_color: "#E6EDF3",
+  muted_color: "#8B949E",
+  nav_account_label: "Account",
   maintenance_mode: "false",
   announcement_active: "false",
   announcement_text: "",
@@ -228,6 +236,76 @@ export default function SettingsPage() {
                   style={{ backgroundColor: settings.bg_color, border: "1px solid #21262D" }}
                 />
               </div>
+            </FieldRow>
+            <FieldRow label="Surface Color" description="Used for cards, panels, and elevated blocks.">
+              <div className="flex items-center gap-3">
+                <input
+                  type="color"
+                  value={settings.surface_color}
+                  onChange={(e) => set("surface_color", e.target.value)}
+                  className="w-10 h-10 rounded-lg border cursor-pointer"
+                  style={{ borderColor: "#21262D", padding: "2px", backgroundColor: "#0D1117" }}
+                />
+                <input
+                  type="text"
+                  value={settings.surface_color}
+                  onChange={(e) => set("surface_color", e.target.value)}
+                  className="px-3 py-2.5 rounded-lg border text-sm outline-none font-mono w-32"
+                  style={inputStyle}
+                  maxLength={7}
+                />
+                <div
+                  className="w-10 h-10 rounded-lg"
+                  style={{ backgroundColor: settings.surface_color, border: "1px solid #21262D" }}
+                />
+              </div>
+            </FieldRow>
+            <FieldRow label="Text Color" description="Primary foreground text tone.">
+              <div className="flex items-center gap-3">
+                <input
+                  type="color"
+                  value={settings.text_color}
+                  onChange={(e) => set("text_color", e.target.value)}
+                  className="w-10 h-10 rounded-lg border cursor-pointer"
+                  style={{ borderColor: "#21262D", padding: "2px", backgroundColor: "#0D1117" }}
+                />
+                <input
+                  type="text"
+                  value={settings.text_color}
+                  onChange={(e) => set("text_color", e.target.value)}
+                  className="px-3 py-2.5 rounded-lg border text-sm outline-none font-mono w-32"
+                  style={inputStyle}
+                  maxLength={7}
+                />
+              </div>
+            </FieldRow>
+            <FieldRow label="Muted Text Color" description="Secondary text, labels, and subtle metadata.">
+              <div className="flex items-center gap-3">
+                <input
+                  type="color"
+                  value={settings.muted_color}
+                  onChange={(e) => set("muted_color", e.target.value)}
+                  className="w-10 h-10 rounded-lg border cursor-pointer"
+                  style={{ borderColor: "#21262D", padding: "2px", backgroundColor: "#0D1117" }}
+                />
+                <input
+                  type="text"
+                  value={settings.muted_color}
+                  onChange={(e) => set("muted_color", e.target.value)}
+                  className="px-3 py-2.5 rounded-lg border text-sm outline-none font-mono w-32"
+                  style={inputStyle}
+                  maxLength={7}
+                />
+              </div>
+            </FieldRow>
+            <FieldRow label="Account Button Label" description="Text shown for the top-right account/login button.">
+              <input
+                type="text"
+                value={settings.nav_account_label}
+                onChange={(e) => set("nav_account_label", e.target.value)}
+                className="w-full px-3 py-2.5 rounded-lg border text-sm outline-none"
+                style={inputStyle}
+              />
             </FieldRow>
           </div>
         </section>

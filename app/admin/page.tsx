@@ -3,8 +3,6 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
-const EDITOR_ENABLED = process.env.NODE_ENV !== "production";
-
 interface Stats {
   userCount: number;
   adminCount: number;
@@ -247,9 +245,8 @@ export default function AdminDashboard() {
             { href: "/admin/settings", label: "Site Settings", desc: "Colors, metadata" },
             { href: "/admin/files", label: "Upload Files", desc: "Manage public assets" },
             { href: "/admin/users", label: "Manage Users", desc: "Roles & accounts" },
-            ...(EDITOR_ENABLED
-              ? [{ href: "/admin/editor", label: "Code Editor", desc: "Edit source files" }]
-              : []),
+            { href: "/admin/editor", label: "Page Editor", desc: "Visual Puck editor" },
+            { href: "/admin/visual-builder", label: "Visual Builder", desc: "Layout builder" },
             { href: "/", label: "View Site", desc: "Open the live site", external: true },
           ].map((item) => (
             <Link

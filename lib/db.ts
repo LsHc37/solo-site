@@ -24,6 +24,114 @@ try {
   db.exec(`ALTER TABLE users ADD COLUMN role TEXT NOT NULL DEFAULT 'user'`);
 } catch { /* column already exists */ }
 
+// ── Employees table ─────────────────────────────────────────────────────────
+db.exec(`
+  CREATE TABLE IF NOT EXISTS employees (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id         INTEGER NOT NULL UNIQUE,
+    employee_number TEXT    NOT NULL UNIQUE,
+    first_name      TEXT    NOT NULL,
+    last_name       TEXT    NOT NULL,
+    phone           TEXT    NOT NULL DEFAULT '',
+    hire_date       TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+    position        TEXT    NOT NULL DEFAULT 'Employee',
+    status          TEXT    NOT NULL DEFAULT 'active',
+    hourly_rate     REAL    NOT NULL DEFAULT 0.0,
+    notes           TEXT    NOT NULL DEFAULT '',
+    created_at      TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+    updated_at      TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  )
+`);
+
+db.exec(`
+  CREATE INDEX IF NOT EXISTS idx_employees_user_id ON employees(user_id)
+`);
+
+db.exec(`
+  CREATE INDEX IF NOT EXISTS idx_employees_status ON employees(status)
+`);
+
+// ── Permissions table ───────────────────────────────────────────────────────
+db.exec(`
+  CREATE TABLE IF NOT EXISTS permissions (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    code        TEXT    NOT NULL UNIQUE,
+    name        TEXT    NOT NULL,
+    description TEXT    NOT NULL DEFAULT '',
+    category    TEXT    NOT NULL DEFAULT 'general',
+    created_at  TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+  )
+`);
+
+// ── Employee permissions table ──────────────────────────────────────────────
+db.exec(`
+  CREATE TABLE IF NOT EXISTS employee_permissions (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    employee_id   INTEGER NOT NULL,
+    permission_id INTEGER NOT NULL,
+    granted_at    TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+    granted_by    INTEGER,
+    FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE,
+    FOREIGN KEY (permission_id) REFERENCES permissions(id) ON DELETE CASCADE,
+    FOREIGN KEY (granted_by) REFERENCES employees(id),
+    UNIQUE(employee_id, permission_id)
+  )
+`);
+
+db.exec(`
+  CREATE INDEX IF NOT EXISTS idx_employee_permissions_employee 
+  ON employee_permissions(employee_id)
+`);
+
+// ── Time entries table ──────────────────────────────────────────────────────
+db.exec(`
+  CREATE TABLE IF NOT EXISTS time_entries (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    employee_id INTEGER NOT NULL,
+    clock_in    TEXT    NOT NULL,
+    clock_out   TEXT,
+    break_minutes INTEGER NOT NULL DEFAULT 0,
+    notes       TEXT    NOT NULL DEFAULT '',
+    created_at  TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+    updated_at  TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+    FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE
+  )
+`);
+
+db.exec(`
+  CREATE INDEX IF NOT EXISTS idx_time_entries_employee_clock_in
+  ON time_entries(employee_id, clock_in DESC)
+`);
+
+// ── Sales table ─────────────────────────────────────────────────────────────
+db.exec(`
+  CREATE TABLE IF NOT EXISTS sales (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    employee_id   INTEGER NOT NULL,
+    sale_date     TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+    customer_name TEXT    NOT NULL DEFAULT '',
+    product_name  TEXT    NOT NULL,
+    quantity      INTEGER NOT NULL DEFAULT 1,
+    unit_price    REAL    NOT NULL,
+    total_amount  REAL    NOT NULL,
+    payment_method TEXT   NOT NULL DEFAULT 'cash',
+    notes         TEXT    NOT NULL DEFAULT '',
+    created_at    TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+    FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE
+  )
+`);
+
+db.exec(`
+  CREATE INDEX IF NOT EXISTS idx_sales_employee_date
+  ON sales(employee_id, sale_date DESC)
+`);
+
+db.exec(`
+  CREATE INDEX IF NOT EXISTS idx_sales_date
+  ON sales(sale_date DESC)
+`);
+
 // ── Content blocks ────────────────────────────────────────────────────────────
 db.exec(`
   CREATE TABLE IF NOT EXISTS content_blocks (
@@ -54,6 +162,27 @@ db.exec(`
     color      TEXT    NOT NULL DEFAULT '#00F0FF',
     created_at TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
   )
+`);
+
+// ── Community posts (questions + reviews) ───────────────────────────────────
+db.exec(`
+  CREATE TABLE IF NOT EXISTS community_posts (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    kind        TEXT    NOT NULL CHECK (kind IN ('question', 'review')),
+    author_name TEXT    NOT NULL,
+    message     TEXT    NOT NULL,
+    created_at  TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+  )
+`);
+
+db.exec(`
+  CREATE INDEX IF NOT EXISTS idx_community_posts_created_at
+  ON community_posts (created_at DESC)
+`);
+
+db.exec(`
+  CREATE INDEX IF NOT EXISTS idx_community_posts_kind_created_at
+  ON community_posts (kind, created_at DESC)
 `);
 
 // ── Auth security tables ─────────────────────────────────────────────────────
@@ -90,18 +219,60 @@ db.exec(`
   ON auth_events (ip, created_at)
 `);
 
+// ── Seed default permissions ─────────────────────────────────────────────────
+const seedPermissions: [string, string, string, string][] = [
+  // Employee Management
+  ['manage_employees', 'Manage Employees', 'Create, edit, and remove employee accounts', 'employees'],
+  ['view_employees', 'View Employees', 'View employee information and list', 'employees'],
+  ['assign_permissions', 'Assign Permissions', 'Grant and revoke employee permissions', 'employees'],
+  
+  // Time & Attendance
+  ['clock_inout', 'Clock In/Out', 'Record time entries (clock in and clock out)', 'time'],
+  ['view_own_time', 'View Own Time', 'View personal time entries', 'time'],
+  ['view_all_time', 'View All Time', 'View all employee time entries', 'time'],
+  ['edit_time_entries', 'Edit Time Entries', 'Modify time entries for any employee', 'time'],
+  
+  // Sales
+  ['log_sales', 'Log Sales', 'Record sales transactions', 'sales'],
+  ['view_own_sales', 'View Own Sales', 'View personal sales records', 'sales'],
+  ['view_all_sales', 'View All Sales', 'View all employee sales records', 'sales'],
+  ['edit_sales', 'Edit Sales', 'Modify sales records', 'sales'],
+  ['delete_sales', 'Delete Sales', 'Remove sales records', 'sales'],
+  
+  // Reports & Analytics
+  ['view_reports', 'View Reports', 'Access reports and analytics', 'reports'],
+  ['export_data', 'Export Data', 'Export employee, time, and sales data', 'reports'],
+  
+  // System
+  ['full_admin', 'Full Administrator', 'Complete system access and control', 'system'],
+];
+
+const insertPermission = db.prepare(
+  `INSERT OR IGNORE INTO permissions (code, name, description, category) VALUES (?, ?, ?, ?)`
+);
+
+for (const [code, name, description, category] of seedPermissions) {
+  insertPermission.run(code, name, description, category);
+}
+
 // ── Seed default site settings ────────────────────────────────────────────────
 const seedSettings: [string, string][] = [
   ["site_name", "Retro Gigz"],
   ["tagline", "Digital Independence."],
   ["primary_color", "#00F0FF"],
   ["bg_color", "#0D1117"],
+  ["surface_color", "#161B22"],
+  ["text_color", "#E6EDF3"],
+  ["muted_color", "#8B949E"],
+  ["nav_account_label", "Account"],
   ["maintenance_mode", "false"],
   ["announcement_active", "false"],
   ["announcement_text", ""],
   ["announcement_color", "#00F0FF"],
   ["meta_description", "A master publisher building privacy-first applications, independent games, and tactical apparel."],
   ["contact_email", ""],
+  ["page_layout_home", ""],
+  ["page_layout_solo", ""],
 ];
 const insertSetting = db.prepare(
   `INSERT OR IGNORE INTO site_settings (key, value) VALUES (?, ?)`

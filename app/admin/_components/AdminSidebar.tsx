@@ -1,10 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
-
-const EDITOR_ENABLED = process.env.NODE_ENV !== "production";
 
 const NAV = [
   {
@@ -29,6 +28,29 @@ const NAV = [
         <path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2" />
         <path d="M16 3.13a4 4 0 0 1 0 7.75" />
         <path d="M21 21v-2a4 4 0 0 0-3-3.85" />
+      </svg>
+    ),
+  },
+  {
+    href: "/admin/enterprise",
+    label: "Enterprise",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+        <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+        <line x1="12" y1="22.08" x2="12" y2="12" />
+      </svg>
+    ),
+  },
+  {
+    href: "/admin/employees",
+    label: "Employees",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+        <circle cx="9" cy="7" r="4" />
+        <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
       </svg>
     ),
   },
@@ -62,13 +84,22 @@ const NAV = [
     ),
   },
   {
-    href: "/admin/editor",
-    label: "Code Editor",
-    dev: true,
+    href: "/admin/visual-builder",
+    label: "Visual Builder",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
-        <polyline points="16 18 22 12 16 6" />
-        <polyline points="8 6 2 12 8 18" />
+        <rect x="3" y="4" width="18" height="16" rx="2" />
+        <path d="M7 8h10M7 12h6M7 16h8" />
+      </svg>
+    ),
+  },
+  {
+    href: "/admin/editor",
+    label: "Page Editor",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+        <path d="M12 20h9" />
+        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
       </svg>
     ),
   },
@@ -80,20 +111,52 @@ interface Props {
 
 export default function AdminSidebar({ userEmail }: Props) {
   const pathname = usePathname();
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   function isActive(href: string, exact?: boolean) {
     return exact ? pathname === href : pathname.startsWith(href);
   }
 
   return (
-    <aside
-      className="fixed left-0 top-0 h-full flex flex-col z-40"
-      style={{
-        width: "240px",
-        backgroundColor: "#161B22",
-        borderRight: "1px solid #21262D",
-      }}
-    >
+    <>
+      <button
+        type="button"
+        onClick={() => setMobileOpen((v) => !v)}
+        className="lg:hidden fixed top-4 left-4 z-50 w-10 h-10 rounded-lg border flex items-center justify-center"
+        style={{ backgroundColor: "#161B22", borderColor: "#21262D", color: "#8B949E" }}
+        aria-label={mobileOpen ? "Close admin navigation" : "Open admin navigation"}
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+          {mobileOpen ? (
+            <path d="M18 6L6 18M6 6l12 12" />
+          ) : (
+            <>
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="3" y1="12" x2="21" y2="12" />
+              <line x1="3" y1="18" x2="21" y2="18" />
+            </>
+          )}
+        </svg>
+      </button>
+
+      {mobileOpen && (
+        <button
+          type="button"
+          className="lg:hidden fixed inset-0 z-30"
+          style={{ backgroundColor: "rgba(13, 17, 23, 0.65)" }}
+          onClick={() => setMobileOpen(false)}
+          aria-label="Close admin navigation overlay"
+        />
+      )}
+
+      <aside
+        className={`fixed left-0 top-0 h-full flex flex-col z-40 transition-transform duration-200 lg:translate-x-0 ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`}
+        style={{
+          width: "240px",
+          backgroundColor: "#161B22",
+          borderRight: "1px solid #21262D",
+        }}
+      >
       {/* Logo */}
       <div
         className="flex items-center gap-3 px-5 py-5"
@@ -119,12 +182,13 @@ export default function AdminSidebar({ userEmail }: Props) {
 
       {/* Nav */}
       <nav className="flex-1 px-3 py-4 flex flex-col gap-0.5 overflow-y-auto">
-        {NAV.filter((item) => EDITOR_ENABLED || !item.dev).map((item) => {
+        {NAV.map((item) => {
           const active = isActive(item.href, item.exact);
           return (
             <Link
               key={item.href}
               href={item.href}
+              onClick={() => setMobileOpen(false)}
               className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150"
               style={{
                 backgroundColor: active ? "#1C2128" : "transparent",
@@ -134,14 +198,6 @@ export default function AdminSidebar({ userEmail }: Props) {
             >
               <span style={{ color: active ? "#00F0FF" : "#8B949E" }}>{item.icon}</span>
               {item.label}
-              {item.dev && (
-                <span
-                  className="ml-auto text-[9px] font-bold px-1.5 py-0.5 rounded"
-                  style={{ backgroundColor: "#FF6B3515", color: "#FF6B35", border: "1px solid #FF6B3533" }}
-                >
-                  DEV
-                </span>
-              )}
             </Link>
           );
         })}
@@ -197,6 +253,7 @@ export default function AdminSidebar({ userEmail }: Props) {
           Sign Out
         </button>
       </div>
-    </aside>
+      </aside>
+    </>
   );
 }
