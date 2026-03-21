@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
         name="description"
-        content="Solo Productivity blog archive with all productivity insights and guides."
+        content="Solo Productivity blog archive with all productivity insights and guides. 100% free and subscription-free."
     />
     <title>Solo Productivity | All Insights</title>
     <style>
@@ -119,6 +119,32 @@
             color: var(--accent);
         }
 
+        .btn-primary {
+            color: #001000;
+            background: var(--accent);
+            box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6), 0 14px 34px rgba(123, 255, 123, 0.28);
+        }
+
+        .btn-primary:hover,
+        .btn-primary:focus-visible {
+            background: #90ff90;
+            box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6), 0 16px 36px rgba(123, 255, 123, 0.36);
+        }
+
+        .actions {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .play-icon {
+            width: 0.95rem;
+            height: 0.95rem;
+            flex: 0 0 auto;
+        }
+
         .hero {
             padding: 3.3rem 0 1.5rem;
         }
@@ -157,6 +183,10 @@
             margin-top: 0.8rem;
             color: var(--muted);
             max-width: 70ch;
+        }
+
+        .hero-cta {
+            margin-top: 1rem;
         }
 
         .archive {
@@ -239,6 +269,10 @@
                 min-height: 64px;
             }
 
+            .actions {
+                justify-content: flex-start;
+            }
+
             .hero {
                 padding-top: 2.4rem;
             }
@@ -257,7 +291,15 @@
     <header class="topbar">
         <div class="container topbar-inner">
             <a class="logo" href="index.html">Solo <span>Productivity</span></a>
-            <a class="btn btn-secondary" href="index.html" aria-label="Go back to homepage">Back to Home</a>
+            <div class="actions">
+                <a class="btn btn-secondary" href="index.html" aria-label="Go back to homepage">Back to Home</a>
+                <a class="btn btn-primary" href="#" aria-label="Download Solo Productivity for free">
+                    <svg class="play-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M4.8 3.2a1 1 0 0 0-1.6.8v16a1 1 0 0 0 1.6.8L20 12 4.8 3.2z"></path>
+                    </svg>
+                    Download for Free
+                </a>
+            </div>
         </div>
     </header>
 
@@ -267,6 +309,14 @@
                 <span class="eyebrow">Archive</span>
                 <h1>All Productivity Insights</h1>
                 <p class="lead">Browse every guide and article from Solo Productivity in one clean, scrollable timeline.</p>
+                <div class="hero-cta">
+                    <a class="btn btn-primary" href="#" aria-label="Download Solo Productivity for free">
+                        <svg class="play-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                            <path d="M4.8 3.2a1 1 0 0 0-1.6.8v16a1 1 0 0 0 1.6.8L20 12 4.8 3.2z"></path>
+                        </svg>
+                        Download for Free
+                    </a>
+                </div>
             </div>
         </section>
 
