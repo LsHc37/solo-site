@@ -138,6 +138,12 @@
             transition: transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
         }
 
+        .play-icon {
+            width: 0.95rem;
+            height: 0.95rem;
+            flex: 0 0 auto;
+        }
+
         .btn:hover,
         .btn:focus-visible {
             transform: translateY(-2px);
@@ -298,6 +304,16 @@
             line-height: 1.35;
         }
 
+        .blog-card h3 a {
+            color: var(--text);
+            text-decoration: none;
+        }
+
+        .blog-card h3 a:hover,
+        .blog-card h3 a:focus-visible {
+            color: var(--accent);
+        }
+
         .blog-card p {
             color: var(--muted);
             margin-top: 0.5rem;
@@ -432,7 +448,14 @@
             <ul class="nav-links" id="navLinks">
                 <li><a href="#features">Features</a></li>
                 <li><a href="#insights">Blog</a></li>
-                <li><a class="btn btn-primary" href="#purchase">Get Lifetime Access</a></li>
+                <li>
+                    <a class="btn btn-primary" href="#">
+                        <svg class="play-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                            <path d="M4.8 3.2a1 1 0 0 0-1.6.8v16a1 1 0 0 0 1.6.8L20 12 4.8 3.2z"></path>
+                        </svg>
+                        Download on Google Play
+                    </a>
+                </li>
             </ul>
         </div>
     </header>
@@ -446,8 +469,11 @@
                     The 5-slot task manager for people who actually want to get things done. No subscriptions. No noise.
                 </p>
                 <div class="hero-cta" id="purchase">
-                    <a href="#" class="btn btn-primary" aria-label="Get lifetime access to Solo Productivity">
-                        Get Lifetime Access - $29.99
+                    <a href="#" class="btn btn-primary" aria-label="Download Solo Productivity on Google Play">
+                        <svg class="play-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                            <path d="M4.8 3.2a1 1 0 0 0-1.6.8v16a1 1 0 0 0 1.6.8L20 12 4.8 3.2z"></path>
+                        </svg>
+                        Download on Google Play
                     </a>
                     <p class="micro-proof">One payment. Lifetime ownership. Zero monthly drag.</p>
                 </div>
@@ -480,8 +506,8 @@
         <section class="section" id="insights">
             <div class="container">
                 <h2 class="section-title">Productivity Insights</h2>
-                <p class="section-intro">Fresh ideas on focus, systems, and shipping meaningful work. Content placeholders below.</p>
-                <div class="blog-grid">
+                <p class="section-intro">Fresh ideas on focus, systems, and shipping meaningful work. Latest posts load automatically from your backend feed.</p>
+                <div class="blog-grid" id="blogGrid">
                     <article class="blog-card fade-in delay-1">
                         <span class="tag">Article Placeholder</span>
                         <div>
@@ -522,6 +548,7 @@
         const menuToggle = document.querySelector(".menu-toggle");
         const navLinks = document.getElementById("navLinks");
         const yearEl = document.getElementById("year");
+        const blogGrid = document.getElementById("blogGrid");
 
         yearEl.textContent = new Date().getFullYear();
 
@@ -537,6 +564,82 @@
                 menuToggle.setAttribute("aria-expanded", "false");
             });
         });
+
+        function renderFallbackBlogCard() {
+            blogGrid.innerHTML = `
+                <article class="blog-card fade-in delay-1">
+                    <span class="tag">Coming Soon</span>
+                    <div>
+                        <h3>Check back tomorrow for our first guide on subscription-free focus.</h3>
+                        <p>New productivity articles will appear here automatically.</p>
+                    </div>
+                </article>
+            `;
+        }
+
+        function formatDate(dateText) {
+            const parsed = new Date(dateText);
+            if (Number.isNaN(parsed.getTime())) {
+                return "Recently";
+            }
+            return parsed.toLocaleDateString(undefined, {
+                year: "numeric",
+                month: "short",
+                day: "numeric"
+            });
+        }
+
+        function escapeHtml(value) {
+            return String(value)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/\"/g, "&quot;")
+                .replace(/'/g, "&#39;");
+        }
+
+        async function loadBlogPosts() {
+            try {
+                const response = await fetch("./blog/posts.json", { cache: "no-store" });
+                if (!response.ok) {
+                    throw new Error("Unable to load posts.json");
+                }
+
+                const posts = await response.json();
+                if (!Array.isArray(posts) || posts.length === 0) {
+                    throw new Error("No post data found");
+                }
+
+                const recentPosts = posts
+                    .slice()
+                    .sort((a, b) => new Date(b.date) - new Date(a.date))
+                    .slice(0, 3);
+
+                blogGrid.innerHTML = recentPosts
+                    .map((post, idx) => {
+                        const title = escapeHtml(post.title || "Untitled Article");
+                        const excerpt = escapeHtml(post.excerpt || "Read the full article for more details.");
+                        const url = escapeHtml(post.url || "#");
+                        const date = formatDate(post.date);
+                        const delayClass = `delay-${Math.min(idx + 1, 3)}`;
+
+                        return `
+                            <article class="blog-card fade-in ${delayClass}">
+                                <span class="tag">${date}</span>
+                                <div>
+                                    <h3><a href="${url}">${title}</a></h3>
+                                    <p>${excerpt}</p>
+                                </div>
+                            </article>
+                        `;
+                    })
+                    .join("");
+            } catch (error) {
+                renderFallbackBlogCard();
+            }
+        }
+
+        loadBlogPosts();
     </script>
 </body>
 </html>
