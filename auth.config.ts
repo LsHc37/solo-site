@@ -12,6 +12,8 @@ export const authConfig: NextAuthConfig = {
         token.id = user.id;
         token.role = (user as { role?: string }).role ?? "user";
         token.adminPortalAccess = (user as { adminPortalAccess?: boolean }).adminPortalAccess === true;
+        token.mustChangePassword = (user as { mustChangePassword?: boolean }).mustChangePassword === true;
+        token.totpEnabled = (user as { totpEnabled?: boolean }).totpEnabled === true;
       }
       return token;
     },
@@ -20,6 +22,8 @@ export const authConfig: NextAuthConfig = {
         if (token.id) session.user.id = token.id as string;
         (session.user as { role?: string }).role = (token.role as string) ?? "user";
         session.user.adminPortalAccess = token.adminPortalAccess === true;
+        (session.user as { mustChangePassword?: boolean }).mustChangePassword = token.mustChangePassword === true;
+        (session.user as { totpEnabled?: boolean }).totpEnabled = token.totpEnabled === true;
       }
       return session;
     },

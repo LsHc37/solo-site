@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
 interface Employee {
   id: number;
@@ -208,16 +209,29 @@ export default function EmployeesPage() {
             Manage employee accounts, permissions, and access control.
           </p>
         </div>
-        <button
-          onClick={openCreateModal}
-          className="px-4 py-2.5 rounded-xl text-sm font-bold transition-all duration-150"
-          style={{
-            backgroundColor: "#00F0FF",
-            color: "#0D1117",
-          }}
-        >
-          + Add Employee
-        </button>
+        <div className="flex gap-2">
+          <Link
+            href="/admin/employees/add"
+            className="px-4 py-2.5 rounded-xl text-sm font-bold transition-all duration-150"
+            style={{
+              backgroundColor: "#00F0FF",
+              color: "#0D1117",
+            }}
+          >
+            ➕ Add Employee (New)
+          </Link>
+          <button
+            onClick={openCreateModal}
+            className="px-4 py-2.5 rounded-xl text-sm font-bold transition-all duration-150"
+            style={{
+              backgroundColor: "#161B22",
+              color: "#8B949E",
+              border: "1px solid #21262D",
+            }}
+          >
+            + Quick Add
+          </button>
+        </div>
       </div>
 
       {/* Search */}

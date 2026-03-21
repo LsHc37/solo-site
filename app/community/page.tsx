@@ -325,7 +325,13 @@ export default function CommunityPage() {
                       </span>
                     </div>
                     <span className="text-xs" style={{ color: "#8B949E" }}>
-                      {new Date(post.created_at).toLocaleString()}
+                      {new Date(post.created_at).toLocaleString('en-US', { 
+                        year: 'numeric', 
+                        month: 'short', 
+                        day: 'numeric',
+                        hour: 'numeric',
+                        minute: '2-digit'
+                      })}
                     </span>
                   </div>
                   <p className="mt-3 text-sm leading-relaxed" style={{ color: "#C9D1D9" }}>

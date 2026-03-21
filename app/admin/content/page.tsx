@@ -169,7 +169,7 @@ function BlockCard({
       )}
 
       <p className="text-[10px]" style={{ color: "#8B949E44" }}>
-        Updated {new Date(block.updated_at).toLocaleString()}
+        Updated {new Date(block.updated_at).toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
       </p>
     </div>
   );

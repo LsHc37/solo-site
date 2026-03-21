@@ -222,7 +222,11 @@ export default function AdminDashboard() {
                     </span>
                   </td>
                   <td className="px-6 py-3 text-xs" style={{ color: "#8B949E" }}>
-                    {new Date(u.created_at).toLocaleDateString()}
+                    {new Date(u.created_at).toLocaleDateString('en-US', { 
+                      year: 'numeric', 
+                      month: 'short', 
+                      day: 'numeric' 
+                    })}
                   </td>
                 </tr>
               ))}

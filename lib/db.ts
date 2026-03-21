@@ -11,18 +11,50 @@ db.pragma("journal_mode = WAL");
 // ── Users table ──────────────────────────────────────────────────────────────
 db.exec(`
   CREATE TABLE IF NOT EXISTS users (
-    id          INTEGER PRIMARY KEY AUTOINCREMENT,
-    email       TEXT    NOT NULL UNIQUE,
-    password    TEXT    NOT NULL,
-    role        TEXT    NOT NULL DEFAULT 'user',
-    created_at  TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+    id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+    email               TEXT    NOT NULL UNIQUE,
+    password            TEXT    NOT NULL,
+    role                TEXT    NOT NULL DEFAULT 'staff' CHECK (role IN ('admin', 'manager', 'staff', 'user')),
+    employment_status   TEXT    NOT NULL DEFAULT 'active' CHECK (employment_status IN ('active', 'suspended', 'terminated')),
+    must_change_password INTEGER NOT NULL DEFAULT 0,
+    created_at          TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+    updated_at          TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
   )
 `);
 
-// Safe migration: add role column to existing databases
+// Safe migrations: add new columns to existing databases
 try {
   db.exec(`ALTER TABLE users ADD COLUMN role TEXT NOT NULL DEFAULT 'user'`);
 } catch { /* column already exists */ }
+
+try {
+  db.exec(`ALTER TABLE users ADD COLUMN employment_status TEXT NOT NULL DEFAULT 'active'`);
+} catch { /* column already exists */ }
+
+try {
+  db.exec(`ALTER TABLE users ADD COLUMN must_change_password INTEGER NOT NULL DEFAULT 0`);
+} catch { /* column already exists */ }
+
+try {
+  db.exec(`ALTER TABLE users ADD COLUMN updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))`);
+} catch { /* column already exists */ }
+
+try {
+  db.exec(`ALTER TABLE users ADD COLUMN totp_secret TEXT`);
+} catch { /* column already exists */ }
+
+try {
+  db.exec(`ALTER TABLE users ADD COLUMN totp_enabled INTEGER NOT NULL DEFAULT 0`);
+} catch { /* column already exists */ }
+
+// Create index for role-based queries
+db.exec(`
+  CREATE INDEX IF NOT EXISTS idx_users_role ON users(role)
+`);
+
+db.exec(`
+  CREATE INDEX IF NOT EXISTS idx_users_employment_status ON users(employment_status)
+`);
 
 // ── Employees table ─────────────────────────────────────────────────────────
 db.exec(`
@@ -243,8 +275,22 @@ const seedPermissions: [string, string, string, string][] = [
   ['view_reports', 'View Reports', 'Access reports and analytics', 'reports'],
   ['export_data', 'Export Data', 'Export employee, time, and sales data', 'reports'],
   
+  // Site & Content Management
+  ['edit_site', 'Edit Site', 'Modify site content, settings, and configuration', 'content'],
+  ['view_site_settings', 'View Site Settings', 'View site configuration and settings', 'content'],
+  ['manage_content', 'Manage Content', 'Create, edit, and delete site content blocks', 'content'],
+  ['manage_files', 'Manage Files', 'Upload, organize, and delete files', 'content'],
+  ['publish_content', 'Publish Content', 'Publish and unpublish site content', 'content'],
+  
+  // Community & Engagement
+  ['respond_posts', 'Respond to Posts', 'Reply to community questions and reviews', 'community'],
+  ['moderate_posts', 'Moderate Posts', 'Edit or remove community posts', 'community'],
+  ['view_posts', 'View Posts', 'View community questions and reviews', 'community'],
+  
   // System
   ['full_admin', 'Full Administrator', 'Complete system access and control', 'system'],
+  ['access_admin_portal', 'Access Admin Portal', 'Access the administration interface', 'system'],
+  ['view_audit_logs', 'View Audit Logs', 'View system audit and security logs', 'system'],
 ];
 
 const insertPermission = db.prepare(

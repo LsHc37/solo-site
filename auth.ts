@@ -3,16 +3,10 @@ import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import db from "@/lib/db";
 import { authConfig } from "@/auth.config";
+import { canAccessSystem, type User } from "@/lib/rbac";
 
 const ADMIN_PORTAL_CODE = process.env.ADMIN_PORTAL_CODE ?? "1357";
 
-interface DbUser {
-  id: number;
-  email: string;
-  password: string;
-  role: string;
-  created_at: string;
-}
 
 const EMAIL_FAILURE_WINDOW_MIN = 15;
 const IP_FAILURE_WINDOW_MIN = 10;
@@ -153,7 +147,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         const existing = db
           .prepare("SELECT * FROM users WHERE email = ?")
-          .get(email) as DbUser | undefined;
+          .get(email) as User | undefined;
 
         if (!existing) {
           if (!createAccountConsent) {
@@ -173,18 +167,28 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           // ── New user: hash password and insert ──
           const hashed = await bcrypt.hash(password, 12);
           const result = db
-            .prepare("INSERT INTO users (email, password) VALUES (?, ?)")
+            .prepare("INSERT INTO users (email, password, role, employment_status) VALUES (?, ?, 'staff', 'active')")
             .run(email, hashed);
 
           clearLocks(email, ip);
           logAuthEvent("signup_success", email, ip, true, "created_via_credentials");
 
-          return {
-            id: String(result.lastInsertRowid),
-            email,
-            role: "user",
-            adminPortalAccess: false,
-          };
+        return {
+          id: String(result.lastInsertRowid),
+          email,
+          role: "staff",
+          adminPortalAccess: false,
+          mustChangePassword: false,
+          totpEnabled: false,
+        };
+        }
+
+        // ── Check employment status and password requirements ──
+        const accessCheck = canAccessSystem(existing);
+        if (!accessCheck.allowed) {
+          logAuthEvent("login_failed", email, ip, false, accessCheck.reason || "access_denied");
+          await slowDown();
+          return null;
         }
 
         // ── Existing user: verify password ──
@@ -237,6 +241,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           email: existing.email,
           role: existing.role ?? "user",
           adminPortalAccess: isAdmin && wantsAdminPortal,
+          mustChangePassword: existing.must_change_password === 1,
+          totpEnabled: existing.totp_enabled === 1,
         };
       },
     }),

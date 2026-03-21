@@ -390,7 +390,7 @@ export default function EmployeePortal() {
                     {timeEntries.slice(0, 10).map((entry, i) => (
                       <tr key={entry.id} style={{ borderBottom: i < 9 ? "1px solid #21262D" : "none" }}>
                         <td className="px-3 py-2" style={{ color: "#E6EDF3" }}>
-                          {new Date(entry.clock_in).toLocaleDateString()}
+                          {new Date(entry.clock_in).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
                         </td>
                         <td className="px-3 py-2" style={{ color: "#E6EDF3" }}>
                           {new Date(entry.clock_in).toLocaleTimeString()}
@@ -439,7 +439,7 @@ export default function EmployeePortal() {
                     {sales.slice(0, 10).map((sale, i) => (
                       <tr key={sale.id} style={{ borderBottom: i < 9 ? "1px solid #21262D" : "none" }}>
                         <td className="px-3 py-2" style={{ color: "#E6EDF3" }}>
-                          {new Date(sale.sale_date).toLocaleDateString()}
+                          {new Date(sale.sale_date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
                         </td>
                         <td className="px-3 py-2" style={{ color: "#E6EDF3" }}>
                           {sale.product_name}
