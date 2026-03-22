@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Unsubscribe | Solo Productivity</title>
+    <style>
+        body { background: #050505; color: #fff; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: #111; padding: 40px; border-radius: 12px; border: 1px solid #222; text-align: center; max-width: 400px; }
+        input { width: 100%; padding: 12px; margin: 20px 0; background: #000; border: 1px solid #333; color: #fff; border-radius: 5px; box-sizing: border-box; }
+        button { background: #ff4444; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer; font-weight: bold; width: 100%; }
+    </style>
+</head>
+<body>
+    <div class="card" id="box">
+        <h2>Unsubscribe</h2>
+        <p>Enter your email to stop receiving weekly tips.</p>
+        <input type="email" id="email" placeholder="email@example.com">
+        <button onclick="unsub()">Remove Me</button>
+    </div>
+
+    <script>
+        async function unsub() {
+            const email = document.getElementById('email').value;
+            const url = 'https://script.google.com/macros/s/AKfycbywC3QOCxHClYaazsepgULnW1zJo_0fXX5rS7Ms6iZkG6uTVi9gI-WabX3nywQQwi79/exec"';
+            
+            document.getElementById('box').innerHTML = "<p>Processing...</p>";
+            
+            await fetch(url + '?action=unsubscribe&email=' + email, { method: 'POST' });
+            
+            document.getElementById('box').innerHTML = "<h2>You're off the list.</h2><p>Sorry to see you go! Stay focused.</p><a href='index.html' style='color:#00ff66'>Back to site</a>";
+        }
+    </script>
+</body>
+</html>
