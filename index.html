@@ -9,6 +9,13 @@
         header { padding: 40px 20px; text-align: center; border-bottom: 1px solid #222; }
         h1 { color: #00ff66; margin-bottom: 10px; }
         .container { max-width: 800px; margin: 0 auto; padding: 40px 20px; }
+        .hero-section { max-width: 800px; margin: 0 auto; padding: 50px 20px 20px; text-align: center; }
+        .hero-card { background: #111; border: 1px solid #222; border-radius: 8px; padding: 36px 24px; }
+        .hero-title { color: #00ff66; margin: 0 0 10px; font-size: 2.4rem; line-height: 1.15; }
+        .hero-subtext { margin: 0 0 24px; color: #fff; font-size: 1.1rem; }
+        .download-btn { display: inline-block; background: #00ff66; color: #000; text-decoration: none; font-weight: 800; padding: 14px 34px; border-radius: 6px; border: 1px solid #00ff66; font-size: 1.05rem; }
+        .download-btn:hover { background: #00cc55; border-color: #00cc55; }
+        .about-section { max-width: 800px; margin: 0 auto; padding: 20px 20px 0; }
         .card { background: #111; padding: 20px; border-radius: 8px; border: 1px solid #222; margin-bottom: 20px; }
         .newsletter-section { background: #0a0a0a; padding: 40px 20px; text-align: center; border-top: 1px solid #222; margin-top: 40px; }
         input[type="email"] { width: 100%; max-width: 300px; padding: 10px; background: #000; border: 1px solid #333; color: #fff; border-radius: 4px; margin-bottom: 10px; }
@@ -32,6 +39,21 @@
             <a href="blog.html">Blog</a>
         </div>
     </header>
+
+    <section class="hero-section" aria-label="Welcome">
+        <div class="hero-card">
+            <h2 class="hero-title">Solo Productivity</h2>
+            <p class="hero-subtext">Focus offline. No distractions. 100% Free.</p>
+            <a class="download-btn" href="#newsletter-box">Download for Free</a>
+        </div>
+    </section>
+
+    <section class="about-section" aria-label="About the App">
+        <div class="card">
+            <h2 style="margin-top: 0; color: #fff;">Built for Independent Achievers</h2>
+            <p style="margin-bottom: 0; color: #ddd;">Solo Productivity is designed for people who execute without noise. Track ghost runs with GPS precision, organize your priorities, and keep every task local and fully offline so your focus stays yours.</p>
+        </div>
+    </section>
 
     <div class="container">
         <h2>Recent Insights</h2>
