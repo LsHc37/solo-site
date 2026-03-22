@@ -17,7 +17,7 @@
         <h2>Unsubscribe</h2>
         <p>Enter your email to stop receiving weekly tips.</p>
         
-        <form action="https://script.google.com/macros/s/AKfycbywC3QOCxHClYaazsepgULnW1zJo_0fXX5rS7Ms6iZkG6uTVi9gI-WabX3nywQQwi79/exec"" method="GET" target="ghost_frame" onsubmit="showSuccess()">
+        <form action="https://script.google.com/macros/s/AKfycbywC3QOCxHClYaazsepgULnW1zJo_0fXX5rS7Ms6iZkG6uTVi9gI-WabX3nywQQwi79/exec" method="GET" target="ghost_frame" onsubmit="showSuccess()">
             <input type="hidden" name="action" value="unsubscribe">
             <input type="email" name="email" id="email-field" placeholder="email@example.com" required>
             <button type="submit">Remove Me</button>
@@ -28,13 +28,15 @@
 
     <script>
         function showSuccess() {
-            // Instantly change the UI while the iframe handles the data in the background
-            document.getElementById('main-content').innerHTML = `
-                <h2>You're off the list.</h2>
-                <p>It might take a second to update, but you're good. Stay focused.</p>
-                <br><br>
-                <a href="index.html" style="color:#00ff66; text-decoration:none;">Back to site</a>
-            `;
+            // A tiny half-second delay to guarantee the data fires before the screen changes
+            setTimeout(() => {
+                document.getElementById('main-content').innerHTML = `
+                    <h2>You're off the list.</h2>
+                    <p>It might take a second to update, but you're good. Stay focused.</p>
+                    <br><br>
+                    <a href="index.html" style="color:#00ff66; text-decoration:none;">Back to site</a>
+                `;
+            }, 500);
         }
     </script>
 </body>
