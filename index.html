@@ -35,7 +35,7 @@
 
     <div class="container">
         <h2>Recent Insights</h2>
-        <div id="recent-posts">
+        <div id="recent-posts-feed">
             <p style="color: #888;">Loading latest articles...</p>
         </div>
     </div>
@@ -68,63 +68,59 @@
             }, 500);
         }
 
-        // Fetch Recent Posts
+        function escapeHtml(value) {
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/\"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
         async function loadRecentPosts() {
-            const container = document.getElementById('recent-posts');
+            const feed = document.getElementById('recent-posts-feed');
+            const postsPath = '/posts.json';
+
+            if (!feed) {
+                console.error('[RecentPosts] Missing #recent-posts-feed container.');
+                return;
+            }
+
             try {
-                const response = await fetch('./posts.json');
-                if (!response.ok) throw new Error('Failed to load posts');
-                
+                console.log(`[RecentPosts] Fetching posts from: ${postsPath}`);
+                const response = await fetch(postsPath, { cache: 'no-store' });
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status} while fetching ${postsPath}`);
+                }
+
                 const posts = await response.json();
-                container.innerHTML = ''; 
-                
-                // Render only the first 3 posts
-                posts.slice(0, 3).forEach(post => {
-                    container.innerHTML += `
+                if (!Array.isArray(posts)) {
+                    throw new Error(`Invalid JSON shape from ${postsPath}: expected an array`);
+                }
+
+                feed.innerHTML = '';
+                posts.slice(0, 3).forEach((post) => {
+                    const title = escapeHtml(post.title || 'Untitled Article');
+                    const date = escapeHtml(post.date || 'Recent');
+                    const excerpt = escapeHtml(post.excerpt || 'Read the full article for more details.');
+                    const url = escapeHtml(post.url || '#');
+
+                    feed.innerHTML += `
                         <div class="card">
-                            <h3 style="color: #00ff66; margin-top: 0;">${post.title}</h3>
-                            <p style="color: #888; font-size: 0.85em;">${post.date}</p>
-                            <p>${post.excerpt}</p>
-                            <a href="${post.url}" style="color: #fff; font-weight: bold; text-decoration: none; border-bottom: 1px solid #00ff66;">Read More</a>
+                            <h3 style="color: #00ff66; margin-top: 0;">${title}</h3>
+                            <p style="color: #888; font-size: 0.85em;">${date}</p>
+                            <p>${excerpt}</p>
+                            <a href="${url}" style="color: #fff; font-weight: bold; text-decoration: none; border-bottom: 1px solid #00ff66;">Read More</a>
                         </div>
                     `;
                 });
             } catch (error) {
-                console.error('Error fetching articles:', error);
-                container.innerHTML = '<p style="color: #ff4444;">Articles are currently syncing. Check back shortly.</p>';
+                console.error(`[RecentPosts] Failed fetch path: ${postsPath}`, error);
+                feed.innerHTML = '<p style="color: #ff4444;">Unable to load recent articles. Please check posts.json path and JSON format.</p>';
             }
         }
-        
+
         document.addEventListener('DOMContentLoaded', loadRecentPosts);
     </script>
-    <script>
-document.addEventListener("DOMContentLoaded", async function() {
-    const feed = document.getElementById('recent-posts-feed');
-    try {
-        // Fetching from the root directory
-        const response = await fetch('./posts.json'); 
-        if (!response.ok) throw new Error('Failed to fetch JSON');
-        
-        const posts = await response.json();
-        feed.innerHTML = ''; 
-        
-        const recentPosts = posts.slice(0, 3);
-        
-        recentPosts.forEach(post => {
-            feed.innerHTML += `
-                <div style="background: #111; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #222;">
-                    <span style="background: #0d2214; color: #00ff66; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; text-transform: uppercase;">Article</span>
-                    <h3 style="color: #fff; margin: 15px 0 10px 0; font-family: sans-serif;">${post.title}</h3>
-                    <p style="color: #aaa; font-family: sans-serif; font-size: 0.95rem; line-height: 1.5; margin-bottom: 15px;">${post.excerpt}</p>
-                    <a href="${post.url}" style="color: #00ff66; text-decoration: none; font-weight: bold; font-family: sans-serif;">Read Post →</a>
-                </div>
-            `;
-        });
-    } catch (error) {
-        console.error("Error loading recent posts:", error);
-        feed.innerHTML = '<p style="color: #ff4444;">Unable to load recent articles. Please check your file paths.</p>';
-    }
-});
-</script>
 </body>
 </html>

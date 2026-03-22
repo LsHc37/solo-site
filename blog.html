@@ -34,7 +34,7 @@
     </header>
 
     <div class="container">
-        <div id="all-posts">
+        <div id="full-blog-archive">
             <p style="color: #888;">Fetching latest insights...</p>
         </div>
     </div>
@@ -67,64 +67,59 @@
             }, 500);
         }
 
-        // Fetch All Posts
+        function escapeHtml(value) {
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/\"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
         async function loadAllPosts() {
-            const container = document.getElementById('all-posts');
+            const archive = document.getElementById('full-blog-archive');
+            const postsPath = '/posts.json';
+
+            if (!archive) {
+                console.error('[BlogArchive] Missing #full-blog-archive container.');
+                return;
+            }
+
             try {
-                const response = await fetch('./posts.json');
-                if (!response.ok) throw new Error('Failed to load posts');
-                
+                console.log(`[BlogArchive] Fetching posts from: ${postsPath}`);
+                const response = await fetch(postsPath, { cache: 'no-store' });
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status} while fetching ${postsPath}`);
+                }
+
                 const posts = await response.json();
-                container.innerHTML = ''; 
-                
-                posts.forEach(post => {
-                    container.innerHTML += `
+                if (!Array.isArray(posts)) {
+                    throw new Error(`Invalid JSON shape from ${postsPath}: expected an array`);
+                }
+
+                archive.innerHTML = '';
+                posts.forEach((post) => {
+                    const title = escapeHtml(post.title || 'Untitled Article');
+                    const date = escapeHtml(post.date || 'Recent');
+                    const excerpt = escapeHtml(post.excerpt || 'Read the full article for more details.');
+                    const url = escapeHtml(post.url || '#');
+
+                    archive.innerHTML += `
                         <div class="card">
-                            <h3 style="color: #00ff66; margin-top: 0;">${post.title}</h3>
-                            <p style="color: #888; font-size: 0.85em;">${post.date}</p>
-                            <p>${post.excerpt}</p>
-                            <a href="${post.url}" style="color: #fff; font-weight: bold; text-decoration: none; border-bottom: 1px solid #00ff66;">Read More</a>
+                            <h3 style="color: #00ff66; margin-top: 0;">${title}</h3>
+                            <p style="color: #888; font-size: 0.85em;">${date}</p>
+                            <p>${excerpt}</p>
+                            <a href="${url}" style="color: #fff; font-weight: bold; text-decoration: none; border-bottom: 1px solid #00ff66;">Read More</a>
                         </div>
                     `;
                 });
             } catch (error) {
-                console.error('Error fetching articles:', error);
-                container.innerHTML = '<p style="color: #ff4444;">Failed to load the archive. Please refresh the page.</p>';
+                console.error(`[BlogArchive] Failed fetch path: ${postsPath}`, error);
+                archive.innerHTML = '<p style="color: #ff4444;">Failed to load the archive. Check posts.json path and JSON format.</p>';
             }
         }
-        
+
         document.addEventListener('DOMContentLoaded', loadAllPosts);
     </script>
-    <script>
-document.addEventListener("DOMContentLoaded", async function() {
-    const archive = document.getElementById('full-blog-archive');
-    try {
-        // Fetching from the root directory
-        const response = await fetch('./posts.json'); 
-        if (!response.ok) throw new Error('Failed to fetch JSON');
-        
-        const posts = await response.json();
-        archive.innerHTML = ''; 
-        
-        posts.forEach(post => {
-            archive.innerHTML += `
-                <div style="background: #111; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #222;">
-                    <span style="background: #0d2214; color: #00ff66; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; text-transform: uppercase;">Article</span>
-                    <h3 style="color: #fff; margin: 15px 0 10px 0; font-family: sans-serif;">${post.title}</h3>
-                    <p style="color: #aaa; font-family: sans-serif; font-size: 0.95rem; line-height: 1.5; margin-bottom: 15px;">${post.excerpt}</p>
-                    <a href="${post.url}" style="color: #00ff66; text-decoration: none; font-weight: bold; font-family: sans-serif;">Read Post →</a>
-                </div>
-            `;
-        });
-    } catch (error) {
-        console.error("Error loading blog archive:", error);
-        archive.innerHTML = `
-            <div style="background: #111; padding: 20px; border-radius: 12px; border: 1px solid #ff4444; text-align: center;">
-                <p style="color: #ff4444; font-family: sans-serif;">Error: Could not load the archive. Ensure posts.json is in the root directory.</p>
-            </div>
-        `;
-    }
-});
-</script>
 </body>
 </html>
