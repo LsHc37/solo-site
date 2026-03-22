@@ -1,26 +1,4 @@
-async function unsub() {
-    const email = document.getElementById('email').value;
-    const url = 'https://script.google.com/macros/s/AKfycbywC3QOCxHClYaazsepgULnW1zJo_0fXX5rS7Ms6iZkG6uTVi9gI-WabX3nywQQwi79/exec'; // <--- Make sure this is your link!
-    
-    if (!email.includes('@')) {
-        alert('Dude, enter a real email.');
-        return;
-    }
-
-    document.getElementById('box').innerHTML = "<p>Processing...</p>";
-    
-    // THE FIX: Use 'no-cors' so the browser doesn't block the request.
-    // We send the request and immediately move on.
-    fetch(url + '?action=unsubscribe&email=' + encodeURIComponent(email), { 
-        mode: 'no-cors',
-        method: 'GET'
-    });
-
-    // Since we can't read the response in no-cors, we wait 2 seconds then show success.
-    setTimeout(() => {
-        document.getElementById('box').innerHTML = "<h2>You're off the list.</h2><p>Sorry to see you go! Stay focused.</p><a href='index.html' style='color:#00ff66'>Back to site</a>";
-    }, 2000);
-}<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -39,7 +17,7 @@ async function unsub() {
         <h2>Unsubscribe</h2>
         <p>Enter your email to stop receiving weekly tips.</p>
         
-        <form action="YOUR_GOOGLE_WEB_APP_URL_HERE" method="GET" target="ghost_frame" onsubmit="showSuccess()">
+        <form action="https://script.google.com/macros/s/AKfycbywC3QOCxHClYaazsepgULnW1zJo_0fXX5rS7Ms6iZkG6uTVi9gI-WabX3nywQQwi79/exec"" method="GET" target="ghost_frame" onsubmit="showSuccess()">
             <input type="hidden" name="action" value="unsubscribe">
             <input type="email" name="email" id="email-field" placeholder="email@example.com" required>
             <button type="submit">Remove Me</button>
@@ -54,6 +32,7 @@ async function unsub() {
             document.getElementById('main-content').innerHTML = `
                 <h2>You're off the list.</h2>
                 <p>It might take a second to update, but you're good. Stay focused.</p>
+                <br><br>
                 <a href="index.html" style="color:#00ff66; text-decoration:none;">Back to site</a>
             `;
         }
