@@ -1,781 +1,101 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-        name="description"
-        content="Solo Productivity is the offline-first 5-slot task manager built for deep focus. 100% free. No subscriptions."
-    />
-    <title>Solo Productivity | Focus. Offline. Forever.</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solo Productivity | By RetroGigz</title>
     <style>
-        @import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap");
-
-        :root {
-            --bg: #000000;
-            --bg-soft: #0a0a0a;
-            --surface: #111111;
-            --surface-2: #141414;
-            --text: #f5f7f7;
-            --muted: #a4adb0;
-            --line: #1f1f1f;
-            --accent: #7bff7b;
-            --accent-soft: rgba(123, 255, 123, 0.16);
-            --radius-lg: 20px;
-            --radius-md: 14px;
-            --shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
-            --container: 1120px;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        html {
-            scroll-behavior: smooth;
-        }
-
-        body {
-            font-family: "Manrope", sans-serif;
-            background:
-                radial-gradient(circle at 85% 6%, rgba(123, 255, 123, 0.14), transparent 30%),
-                radial-gradient(circle at 10% 88%, rgba(255, 255, 255, 0.08), transparent 25%),
-                linear-gradient(180deg, #050505 0%, #000000 52%, #050505 100%);
-            color: var(--text);
-            min-height: 100vh;
-            line-height: 1.6;
-            overflow-x: hidden;
-        }
-
-        body::before {
-            content: "";
-            position: fixed;
-            inset: 0;
-            background-image: linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-            background-size: 34px 34px;
-            pointer-events: none;
-            z-index: -1;
-        }
-
-        .container {
-            width: min(var(--container), calc(100% - 2.5rem));
-            margin-inline: auto;
-        }
-
-        .site-header {
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            background: rgba(0, 0, 0, 0.72);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .nav {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            min-height: 74px;
-            gap: 1.1rem;
-        }
-
-        .logo {
-            font-size: 1.05rem;
-            font-weight: 800;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            color: var(--text);
-            text-decoration: none;
-        }
-
-        .logo span {
-            color: var(--accent);
-        }
-
-        .nav-links {
-            display: flex;
-            align-items: center;
-            gap: 2rem;
-            list-style: none;
-        }
-
-        .nav-links a {
-            color: #d5d9db;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 0.95rem;
-            transition: color 160ms ease;
-        }
-
-        .nav-links a:hover,
-        .nav-links a:focus-visible {
-            color: var(--accent);
-        }
-
-        .menu-toggle {
-            display: none;
-            border: 1px solid var(--line);
-            background: rgba(255, 255, 255, 0.02);
-            color: var(--text);
-            padding: 0.5rem 0.7rem;
-            border-radius: 10px;
-            cursor: pointer;
-        }
-
-        .btn {
-            border: 1px solid transparent;
-            border-radius: 999px;
-            padding: 0.82rem 1.4rem;
-            font-weight: 700;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.4rem;
-            transition: transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
-        }
-
-        .play-icon {
-            width: 0.95rem;
-            height: 0.95rem;
-            flex: 0 0 auto;
-        }
-
-        .btn:hover,
-        .btn:focus-visible {
-            transform: translateY(-2px);
-        }
-
-        .btn-primary {
-            color: #001000;
-            background: var(--accent);
-            box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6), 0 14px 34px rgba(123, 255, 123, 0.28);
-        }
-
-        .btn-primary:hover,
-        .btn-primary:focus-visible {
-            background: #90ff90;
-            box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6), 0 16px 36px rgba(123, 255, 123, 0.36);
-        }
-
-        .hero {
-            padding: 5.3rem 0 4.8rem;
-        }
-
-        .hero-shell {
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01));
-            border-radius: var(--radius-lg);
-            padding: clamp(1.8rem, 3vw, 3rem);
-            box-shadow: var(--shadow);
-            animation: rise 620ms ease both;
-        }
-
-        .eyebrow {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.45rem;
-            background: var(--accent-soft);
-            color: #dbffdb;
-            border: 1px solid rgba(123, 255, 123, 0.3);
-            border-radius: 999px;
-            padding: 0.38rem 0.9rem;
-            font-size: 0.78rem;
-            font-weight: 700;
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
-        }
-
-        h1 {
-            margin-top: 1.15rem;
-            font-size: clamp(2.1rem, 7.2vw, 4.3rem);
-            line-height: 1.08;
-            letter-spacing: -0.03em;
-            max-width: 13ch;
-        }
-
-        .hero-sub {
-            margin-top: 1.15rem;
-            color: var(--muted);
-            max-width: 64ch;
-            font-size: clamp(1rem, 2.2vw, 1.18rem);
-        }
-
-        .hero-cta {
-            margin-top: 2rem;
-            display: flex;
-            gap: 1rem;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .micro-proof {
-            color: #bbc2c5;
-            font-size: 0.92rem;
-        }
-
-        .section {
-            padding: 3.2rem 0;
-        }
-
-        .section-title {
-            font-size: clamp(1.35rem, 4vw, 2.1rem);
-            letter-spacing: -0.02em;
-            margin-bottom: 0.4rem;
-        }
-
-        .section-intro {
-            color: var(--muted);
-            margin-bottom: 1.8rem;
-            max-width: 58ch;
-        }
-
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 1rem;
-        }
-
-        .feature {
-            background: linear-gradient(165deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01));
-            border: 1px solid var(--line);
-            border-radius: var(--radius-md);
-            padding: 1.4rem;
-            transition: border-color 180ms ease, transform 180ms ease;
-        }
-
-        .feature:hover {
-            border-color: rgba(123, 255, 123, 0.4);
-            transform: translateY(-4px);
-        }
-
-        .feature h3 {
-            font-size: 1.1rem;
-            margin-bottom: 0.6rem;
-        }
-
-        .feature p {
-            color: var(--muted);
-            font-size: 0.95rem;
-        }
-
-        .blog-grid {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 1rem;
-        }
-
-        .insights-cta-wrap {
-            margin-top: 1.4rem;
-            display: flex;
-            justify-content: center;
-        }
-
-        .blog-card {
-            background: var(--surface-2);
-            border: 1px solid var(--line);
-            border-radius: var(--radius-md);
-            padding: 1.35rem;
-            min-height: 190px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            transition: border-color 180ms ease, background-color 180ms ease;
-        }
-
-        .blog-card:hover {
-            border-color: rgba(123, 255, 123, 0.35);
-            background: #181818;
-        }
-
-        .blog-card .tag {
-            color: #d9ffda;
-            font-size: 0.78rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            background: rgba(123, 255, 123, 0.12);
-            border: 1px solid rgba(123, 255, 123, 0.25);
-            border-radius: 999px;
-            padding: 0.3rem 0.7rem;
-            width: fit-content;
-        }
-
-        .blog-card h3 {
-            margin-top: 1rem;
-            font-size: 1.05rem;
-            line-height: 1.35;
-        }
-
-        .blog-card h3 a {
-            color: var(--text);
-            text-decoration: none;
-        }
-
-        .blog-card h3 a:hover,
-        .blog-card h3 a:focus-visible {
-            color: var(--accent);
-        }
-
-        .blog-card p {
-            color: var(--muted);
-            margin-top: 0.5rem;
-            font-size: 0.92rem;
-        }
-
-        .site-footer {
-            border-top: 1px solid var(--line);
-            margin-top: 3rem;
-            padding: 1.2rem 0 2rem;
-            color: #8a9194;
-            font-size: 0.88rem;
-            text-align: center;
-        }
-
-        .newsletter-wrap {
-            padding: 0 0 0.7rem;
-        }
-
-        .newsletter-shell {
-            border: 1px solid rgba(123, 255, 123, 0.28);
-            background: linear-gradient(165deg, rgba(123, 255, 123, 0.08), rgba(255, 255, 255, 0.02));
-            border-radius: var(--radius-lg);
-            padding: clamp(1.2rem, 2.5vw, 1.8rem);
-            box-shadow: var(--shadow);
-        }
-
-        .newsletter-shell h2 {
-            font-size: clamp(1.15rem, 3.2vw, 1.6rem);
-            letter-spacing: -0.02em;
-        }
-
-        .newsletter-shell p {
-            color: var(--muted);
-            margin-top: 0.35rem;
-            margin-bottom: 1rem;
-        }
-
-        #newsletter-form {
-            display: flex;
-            gap: 0.65rem;
-            flex-wrap: wrap;
-        }
-
-        #newsletter-form input[type="email"] {
-            flex: 1 1 280px;
-            min-height: 46px;
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.18);
-            background: rgba(0, 0, 0, 0.48);
-            color: var(--text);
-            padding: 0.75rem 0.9rem;
-            font: inherit;
-        }
-
-        #newsletter-form input[type="email"]::placeholder {
-            color: #9ea7ab;
-        }
-
-        #newsletter-form input[type="email"]:focus-visible {
-            outline: 2px solid rgba(123, 255, 123, 0.5);
-            outline-offset: 2px;
-            border-color: rgba(123, 255, 123, 0.55);
-        }
-
-        #newsletter-form button[type="submit"] {
-            min-height: 46px;
-            border: 1px solid rgba(123, 255, 123, 0.4);
-            border-radius: 12px;
-            background: var(--accent);
-            color: #001000;
-            padding: 0.7rem 1.15rem;
-            font: inherit;
-            font-weight: 800;
-            cursor: pointer;
-            transition: transform 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
-            box-shadow: 0 12px 28px rgba(123, 255, 123, 0.25);
-        }
-
-        #newsletter-form button[type="submit"]:hover,
-        #newsletter-form button[type="submit"]:focus-visible {
-            background: #90ff90;
-            transform: translateY(-1px);
-        }
-
-        .newsletter-success {
-            border: 1px solid rgba(123, 255, 123, 0.36);
-            border-radius: 12px;
-            background: rgba(123, 255, 123, 0.12);
-            color: #dfffdf;
-            padding: 0.8rem 0.95rem;
-            font-weight: 700;
-            width: fit-content;
-            animation: fadeUp 260ms ease;
-        }
-
-        .footer-inner {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 0.6rem;
-        }
-
-        .footer-links {
-            display: flex;
-            gap: 1.2rem;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .footer-links a {
-            color: #8a9194;
-            text-decoration: none;
-            transition: color 160ms ease;
-        }
-
-        .footer-links a:hover,
-        .footer-links a:focus-visible {
-            color: var(--accent);
-        }
-
-        .fade-in {
-            opacity: 0;
-            transform: translateY(16px);
-            animation: fadeUp 640ms ease forwards;
-        }
-
-        .delay-1 { animation-delay: 120ms; }
-        .delay-2 { animation-delay: 190ms; }
-        .delay-3 { animation-delay: 260ms; }
-
-        @keyframes rise {
-            from {
-                opacity: 0;
-                transform: translateY(14px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes fadeUp {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @media (max-width: 960px) {
-            .features-grid,
-            .blog-grid {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-            }
-        }
-
-        @media (max-width: 760px) {
-            .menu-toggle {
-                display: inline-flex;
-            }
-
-            .nav-links {
-                position: absolute;
-                top: 74px;
-                left: 0;
-                right: 0;
-                background: rgba(4, 4, 4, 0.96);
-                border-bottom: 1px solid var(--line);
-                padding: 1rem 1.25rem 1.25rem;
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 0.9rem;
-                transform: translateY(-8px);
-                opacity: 0;
-                pointer-events: none;
-                transition: opacity 160ms ease, transform 160ms ease;
-            }
-
-            .nav-links.show {
-                opacity: 1;
-                transform: translateY(0);
-                pointer-events: auto;
-            }
-
-            .nav-links .btn {
-                width: 100%;
-            }
-
-            .hero {
-                padding-top: 3.8rem;
-            }
-        }
-
-        @media (max-width: 640px) {
-            .container {
-                width: min(var(--container), calc(100% - 1.4rem));
-            }
-
-            .features-grid,
-            .blog-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .hero-shell {
-                padding: 1.2rem;
-            }
-        }
+        body { background: #050505; color: #fff; font-family: sans-serif; margin: 0; padding: 0; line-height: 1.6; }
+        header { padding: 40px 20px; text-align: center; border-bottom: 1px solid #222; }
+        h1 { color: #00ff66; margin-bottom: 10px; }
+        .container { max-width: 800px; margin: 0 auto; padding: 40px 20px; }
+        .card { background: #111; padding: 20px; border-radius: 8px; border: 1px solid #222; margin-bottom: 20px; }
+        .newsletter-section { background: #0a0a0a; padding: 40px 20px; text-align: center; border-top: 1px solid #222; margin-top: 40px; }
+        input[type="email"] { width: 100%; max-width: 300px; padding: 10px; background: #000; border: 1px solid #333; color: #fff; border-radius: 4px; margin-bottom: 10px; }
+        button { background: #00ff66; color: #000; border: none; padding: 10px 20px; font-weight: bold; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #00cc55; }
+        footer { text-align: center; padding: 20px; font-size: 0.8em; color: #666; }
+        footer a { color: #888; text-decoration: none; }
+        footer a:hover { color: #bbb; }
+        .hidden { display: none; }
+        .nav-links { margin-top: 20px; }
+        .nav-links a { color: #fff; margin: 0 10px; text-decoration: none; font-weight: bold; }
+        .nav-links a:hover { color: #00ff66; }
     </style>
 </head>
 <body>
-    <header class="site-header">
-        <div class="container nav">
-            <a class="logo" href="#top" aria-label="Solo Productivity home">Solo <span>Productivity</span></a>
-            <button class="menu-toggle" aria-label="Toggle navigation" aria-expanded="false">Menu</button>
-            <ul class="nav-links" id="navLinks">
-                <li><a href="#features">Features</a></li>
-                <li><a href="#insights">Blog</a></li>
-                <li>
-                    <a class="btn btn-primary" href="#">
-                        <svg class="play-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                            <path d="M4.8 3.2a1 1 0 0 0-1.6.8v16a1 1 0 0 0 1.6.8L20 12 4.8 3.2z"></path>
-                        </svg>
-                        Download for Free
-                    </a>
-                </li>
-            </ul>
+    <header>
+        <h1>Solo Productivity</h1>
+        <p>Focus offline. No distractions. 100% Free.</p>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="blog.html">Blog</a>
         </div>
     </header>
 
-    <main id="top">
-        <section class="hero">
-            <div class="container hero-shell">
-                <span class="eyebrow">Offline-First Productivity</span>
-                <h1>Focus. Offline. Forever.</h1>
-                <p class="hero-sub">
-                    The 5-slot task manager for people who actually want to get things done. No subscriptions. No noise.
-                </p>
-                <div class="hero-cta" id="download">
-                    <a href="#" class="btn btn-primary" aria-label="Download Solo Productivity for free">
-                        <svg class="play-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                            <path d="M4.8 3.2a1 1 0 0 0-1.6.8v16a1 1 0 0 0 1.6.8L20 12 4.8 3.2z"></path>
-                        </svg>
-                        Download for Free
-                    </a>
-                    <p class="micro-proof">No Subscriptions. No Credit Card. Just Focus.</p>
-                </div>
-            </div>
-        </section>
-
-        <section class="section" id="features">
-            <div class="container">
-                <h2 class="section-title">Built For Focus, Not Feature Creep</h2>
-                <p class="section-intro">
-                    Most task apps pile on complexity. Solo Productivity does the opposite: less noise, clearer priorities, more execution.
-                </p>
-                <div class="features-grid">
-                    <article class="feature fade-in delay-1">
-                        <h3>The 5-Slot To-Do Rack</h3>
-                        <p>A free focus framework that keeps your active tasks intentional, clear, and actually finishable.</p>
-                    </article>
-                    <article class="feature fade-in delay-2">
-                        <h3>100% Offline</h3>
-                        <p>No cloud syncing delays, works on airplanes or deep in the woods, and starts instantly every time.</p>
-                    </article>
-                    <article class="feature fade-in delay-3">
-                        <h3>Free Forever</h3>
-                        <p>Use every core feature instantly with zero gatekeeping, zero account friction, and zero distractions.</p>
-                    </article>
-                </div>
-            </div>
-        </section>
-
-        <section class="section" id="insights">
-            <div class="container">
-                <h2 class="section-title">Productivity Insights</h2>
-                <p class="section-intro">Fresh ideas on focus, systems, and shipping meaningful work. Latest posts load automatically from your backend feed.</p>
-                <div class="blog-grid" id="blogGrid">
-                    <article class="blog-card fade-in delay-1">
-                        <span class="tag">Article Placeholder</span>
-                        <div>
-                            <h3>Why Limiting Your Task List Makes You Faster</h3>
-                            <p>Short summary will be injected by your backend script.</p>
-                        </div>
-                    </article>
-                    <article class="blog-card fade-in delay-2">
-                        <span class="tag">Article Placeholder</span>
-                        <div>
-                            <h3>Offline Workflow: How To Stay Focused Anywhere</h3>
-                            <p>Short summary will be injected by your backend script.</p>
-                        </div>
-                    </article>
-                    <article class="blog-card fade-in delay-3">
-                        <span class="tag">Article Placeholder</span>
-                        <div>
-                            <h3>The Free-First Productivity Stack</h3>
-                            <p>Short summary will be injected by your backend script.</p>
-                        </div>
-                    </article>
-                </div>
-                <div class="insights-cta-wrap">
-                    <a class="btn btn-primary" href="blog.html">View All Insights</a>
-                </div>
-            </div>
-        </section>
-
-        <section class="section newsletter-wrap" aria-label="Newsletter signup">
-            <div class="container">
-                <div class="newsletter-shell">
-                    <h2>Get Weekly Solo Focus Missions</h2>
-                    <p>One short email with practical tactics to protect your focus and ship meaningful work.</p>
-                    <form id="newsletter-form" action="https://script.google.com/macros/s/AKfycbywC3QOCxHClYaazsepgULnW1zJo_0fXX5rS7Ms6iZkG6uTVi9gI-WabX3nywQQwi79/exec" method="POST">
-                        <input type="email" name="email" required placeholder="Enter your email">
-                        <button type="submit">Join</button>
-                    </form>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <footer class="site-footer">
-        <div class="container footer-inner">
-            <p>&copy; 2026 RetroGigz</p>
-            <div class="footer-links">
-                <a href="unsubscribe.html">Manage Subscription</a>
-            </div>
+    <div class="container">
+        <h2>Recent Insights</h2>
+        <div id="recent-posts">
+            <p style="color: #888;">Loading latest articles...</p>
         </div>
+    </div>
+
+    <div class="newsletter-section" id="newsletter-box">
+        <h3>Join the Mission</h3>
+        <p>Get one hard-mode productivity tip every Sunday.</p>
+        <form action="https://script.google.com/macros/s/AKfycbywC3QOCxHClYaazsepgULnW1zJo_0fXX5rS7Ms6iZkG6uTVi9gI-WabX3nywQQwi79/exec" method="GET" target="ghost_frame" onsubmit="showSuccess()">
+            <input type="hidden" name="action" value="subscribe">
+            <input type="email" name="email" placeholder="Enter your email" required>
+            <button type="submit">Join</button>
+        </form>
+    </div>
+
+    <iframe name="ghost_frame" class="hidden"></iframe>
+
+    <footer>
+        <p>&copy; 2026 RetroGigz. All rights reserved.</p>
+        <p><a href="unsubscribe.html">Manage Subscription</a></p>
     </footer>
 
     <script>
-        const menuToggle = document.querySelector(".menu-toggle");
-        const navLinks = document.getElementById("navLinks");
-        const yearEl = document.getElementById("year");
-        const blogGrid = document.getElementById("blogGrid");
-        const newsletterForm = document.getElementById("newsletter-form");
-
-        yearEl.textContent = new Date().getFullYear();
-
-        menuToggle.addEventListener("click", () => {
-            const isExpanded = menuToggle.getAttribute("aria-expanded") === "true";
-            menuToggle.setAttribute("aria-expanded", String(!isExpanded));
-            navLinks.classList.toggle("show");
-        });
-
-        navLinks.querySelectorAll("a").forEach((link) => {
-            link.addEventListener("click", () => {
-                navLinks.classList.remove("show");
-                menuToggle.setAttribute("aria-expanded", "false");
-            });
-        });
-
-        function renderFallbackBlogCard() {
-            blogGrid.innerHTML = `
-                <article class="blog-card fade-in delay-1">
-                    <span class="tag">Coming Soon</span>
-                    <div>
-                        <h3>Check back tomorrow for our first guide on subscription-free focus.</h3>
-                        <p>New productivity articles will appear here automatically.</p>
-                    </div>
-                </article>
-            `;
+        // Handle Newsletter Success UI
+        function showSuccess() {
+            setTimeout(() => {
+                document.getElementById('newsletter-box').innerHTML = `
+                    <h3 style="color: #00ff66;">Welcome to the mission.</h3>
+                    <p>Check your inbox for the welcome email. Stay focused.</p>
+                `;
+            }, 500);
         }
 
-        function formatDate(dateText) {
-            const parsed = new Date(dateText);
-            if (Number.isNaN(parsed.getTime())) {
-                return "Recently";
-            }
-            return parsed.toLocaleDateString(undefined, {
-                year: "numeric",
-                month: "short",
-                day: "numeric"
-            });
-        }
-
-        function escapeHtml(value) {
-            return String(value)
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/\"/g, "&quot;")
-                .replace(/'/g, "&#39;");
-        }
-
-        async function loadBlogPosts() {
+        // Fetch Recent Posts
+        async function loadRecentPosts() {
+            const container = document.getElementById('recent-posts');
             try {
-                const response = await fetch("./blog/posts.json", { cache: "no-store" });
-                if (!response.ok) {
-                    throw new Error("Unable to load posts.json");
-                }
-
+                const response = await fetch('./posts.json');
+                if (!response.ok) throw new Error('Failed to load posts');
+                
                 const posts = await response.json();
-                if (!Array.isArray(posts) || posts.length === 0) {
-                    throw new Error("No post data found");
-                }
-
-                const recentPosts = posts
-                    .slice()
-                    .sort((a, b) => new Date(b.date) - new Date(a.date))
-                    .slice(0, 3);
-
-                blogGrid.innerHTML = recentPosts
-                    .map((post, idx) => {
-                        const title = escapeHtml(post.title || "Untitled Article");
-                        const excerpt = escapeHtml(post.excerpt || "Read the full article for more details.");
-                        const url = escapeHtml(post.url || "#");
-                        const date = formatDate(post.date);
-                        const delayClass = `delay-${Math.min(idx + 1, 3)}`;
-
-                        return `
-                            <article class="blog-card fade-in ${delayClass}">
-                                <span class="tag">${date}</span>
-                                <div>
-                                    <h3><a href="${url}">${title}</a></h3>
-                                    <p>${excerpt}</p>
-                                </div>
-                            </article>
-                        `;
-                    })
-                    .join("");
-            } catch (error) {
-                renderFallbackBlogCard();
-            }
-        }
-
-        async function submitNewsletterForm(event) {
-            event.preventDefault();
-
-            const submitButton = newsletterForm.querySelector("button[type='submit']");
-            const originalLabel = submitButton.textContent;
-            submitButton.disabled = true;
-            submitButton.textContent = "Joining...";
-
-            try {
-                const formData = new FormData(newsletterForm);
-                const response = await fetch(newsletterForm.action, {
-                    method: "POST",
-                    body: formData
+                container.innerHTML = ''; 
+                
+                // Render only the first 3 posts
+                posts.slice(0, 3).forEach(post => {
+                    container.innerHTML += `
+                        <div class="card">
+                            <h3 style="color: #00ff66; margin-top: 0;">${post.title}</h3>
+                            <p style="color: #888; font-size: 0.85em;">${post.date}</p>
+                            <p>${post.excerpt}</p>
+                            <a href="${post.url}" style="color: #fff; font-weight: bold; text-decoration: none; border-bottom: 1px solid #00ff66;">Read More</a>
+                        </div>
+                    `;
                 });
-
-                if (!response.ok) {
-                    throw new Error("Newsletter request failed");
-                }
-
-                newsletterForm.outerHTML = '<p class="newsletter-success">Thanks for joining!</p>';
             } catch (error) {
-                submitButton.disabled = false;
-                submitButton.textContent = originalLabel;
+                console.error('Error fetching articles:', error);
+                container.innerHTML = '<p style="color: #ff4444;">Articles are currently syncing. Check back shortly.</p>';
             }
         }
-
-        if (newsletterForm) {
-            newsletterForm.addEventListener("submit", submitNewsletterForm);
-        }
-
-        loadBlogPosts();
+        
+        document.addEventListener('DOMContentLoaded', loadRecentPosts);
     </script>
 </body>
 </html>

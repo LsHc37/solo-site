@@ -1,573 +1,99 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-        name="description"
-        content="Solo Productivity blog archive with all productivity insights and guides. 100% free and subscription-free."
-    />
-    <title>Solo Productivity | All Insights</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog | Solo Productivity</title>
     <style>
-        @import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap");
-
-        :root {
-            --bg: #000000;
-            --bg-soft: #0a0a0a;
-            --surface: #121212;
-            --text: #f5f7f7;
-            --muted: #a4adb0;
-            --line: #1f1f1f;
-            --accent: #7bff7b;
-            --accent-soft: rgba(123, 255, 123, 0.16);
-            --radius-lg: 20px;
-            --radius-md: 14px;
-            --shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
-            --container: 980px;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: "Manrope", sans-serif;
-            background:
-                radial-gradient(circle at 12% 5%, rgba(123, 255, 123, 0.12), transparent 28%),
-                radial-gradient(circle at 88% 95%, rgba(255, 255, 255, 0.08), transparent 26%),
-                linear-gradient(180deg, #050505 0%, #000000 52%, #050505 100%);
-            color: var(--text);
-            min-height: 100vh;
-            line-height: 1.6;
-        }
-
-        body::before {
-            content: "";
-            position: fixed;
-            inset: 0;
-            background-image: linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-            background-size: 34px 34px;
-            pointer-events: none;
-            z-index: -1;
-        }
-
-        .container {
-            width: min(var(--container), calc(100% - 2.2rem));
-            margin-inline: auto;
-        }
-
-        .topbar {
-            position: sticky;
-            top: 0;
-            z-index: 50;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-            background: rgba(0, 0, 0, 0.72);
-            backdrop-filter: blur(10px);
-        }
-
-        .topbar-inner {
-            min-height: 72px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 1rem;
-        }
-
-        .logo {
-            text-decoration: none;
-            color: var(--text);
-            font-size: 1rem;
-            font-weight: 800;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-        }
-
-        .logo span {
-            color: var(--accent);
-        }
-
-        .btn {
-            border: 1px solid transparent;
-            border-radius: 999px;
-            padding: 0.8rem 1.2rem;
-            font-weight: 700;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.45rem;
-            transition: transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
-        }
-
-        .btn:hover,
-        .btn:focus-visible {
-            transform: translateY(-2px);
-        }
-
-        .btn-secondary {
-            border-color: var(--line);
-            color: #eef2f2;
-            background: rgba(255, 255, 255, 0.02);
-        }
-
-        .btn-secondary:hover,
-        .btn-secondary:focus-visible {
-            border-color: rgba(123, 255, 123, 0.45);
-            color: var(--accent);
-        }
-
-        .btn-primary {
-            color: #001000;
-            background: var(--accent);
-            box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6), 0 14px 34px rgba(123, 255, 123, 0.28);
-        }
-
-        .btn-primary:hover,
-        .btn-primary:focus-visible {
-            background: #90ff90;
-            box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6), 0 16px 36px rgba(123, 255, 123, 0.36);
-        }
-
-        .actions {
-            display: flex;
-            align-items: center;
-            gap: 0.65rem;
-            flex-wrap: wrap;
-            justify-content: flex-end;
-        }
-
-        .play-icon {
-            width: 0.95rem;
-            height: 0.95rem;
-            flex: 0 0 auto;
-        }
-
-        .hero {
-            padding: 3.3rem 0 1.5rem;
-        }
-
-        .hero-shell {
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01));
-            border-radius: var(--radius-lg);
-            padding: clamp(1.4rem, 3vw, 2.2rem);
-            box-shadow: var(--shadow);
-        }
-
-        .eyebrow {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.45rem;
-            background: var(--accent-soft);
-            color: #dbffdb;
-            border: 1px solid rgba(123, 255, 123, 0.3);
-            border-radius: 999px;
-            padding: 0.35rem 0.85rem;
-            font-size: 0.76rem;
-            font-weight: 700;
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
-        }
-
-        h1 {
-            margin-top: 1rem;
-            font-size: clamp(1.7rem, 6vw, 3rem);
-            line-height: 1.1;
-            letter-spacing: -0.02em;
-        }
-
-        .lead {
-            margin-top: 0.8rem;
-            color: var(--muted);
-            max-width: 70ch;
-        }
-
-        .hero-cta {
-            margin-top: 1rem;
-        }
-
-        .archive {
-            padding: 1.3rem 0 3rem;
-        }
-
-        .archive-list {
-            display: grid;
-            gap: 1rem;
-        }
-
-        .post-item {
-            border: 1px solid var(--line);
-            border-radius: var(--radius-md);
-            background: var(--surface);
-            padding: 1.2rem;
-            transition: border-color 180ms ease, background-color 180ms ease;
-        }
-
-        .post-item:hover {
-            border-color: rgba(123, 255, 123, 0.4);
-            background: #171717;
-        }
-
-        .post-meta {
-            color: #d9ffda;
-            font-size: 0.76rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            display: inline-block;
-            border: 1px solid rgba(123, 255, 123, 0.25);
-            background: rgba(123, 255, 123, 0.12);
-            border-radius: 999px;
-            padding: 0.25rem 0.6rem;
-        }
-
-        .post-title {
-            margin-top: 0.75rem;
-            font-size: clamp(1.08rem, 2.5vw, 1.26rem);
-            line-height: 1.33;
-        }
-
-        .post-title a {
-            color: var(--text);
-            text-decoration: none;
-        }
-
-        .post-title a:hover,
-        .post-title a:focus-visible {
-            color: var(--accent);
-        }
-
-        .post-excerpt {
-            margin-top: 0.55rem;
-            color: var(--muted);
-        }
-
-        .empty-state {
-            border: 1px dashed rgba(123, 255, 123, 0.4);
-            border-radius: var(--radius-md);
-            background: rgba(123, 255, 123, 0.06);
-            padding: 1.3rem;
-            color: #ddffe0;
-        }
-
-        .site-footer {
-            border-top: 1px solid var(--line);
-            padding: 1.1rem 0 2rem;
-            color: #8a9194;
-            font-size: 0.88rem;
-            text-align: center;
-        }
-
-        .site-footer .footer-inner {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 0.6rem;
-        }
-
-        .site-footer .footer-links {
-            display: flex;
-            gap: 1.2rem;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .site-footer .footer-links a {
-            color: #8a9194;
-            text-decoration: none;
-            transition: color 160ms ease;
-        }
-
-        .site-footer .footer-links a:hover,
-        .site-footer .footer-links a:focus-visible {
-            color: var(--accent);
-        }
-
-        .newsletter-wrap {
-            padding: 0 0 1.5rem;
-        }
-
-        .newsletter-shell {
-            border: 1px solid rgba(123, 255, 123, 0.28);
-            background: linear-gradient(165deg, rgba(123, 255, 123, 0.08), rgba(255, 255, 255, 0.02));
-            border-radius: var(--radius-lg);
-            padding: clamp(1.2rem, 2.5vw, 1.8rem);
-            box-shadow: var(--shadow);
-        }
-
-        .newsletter-shell h2 {
-            font-size: clamp(1.15rem, 3.2vw, 1.6rem);
-            letter-spacing: -0.02em;
-        }
-
-        .newsletter-shell p {
-            color: var(--muted);
-            margin-top: 0.35rem;
-            margin-bottom: 1rem;
-        }
-
-        #newsletter-form {
-            display: flex;
-            gap: 0.65rem;
-            flex-wrap: wrap;
-        }
-
-        #newsletter-form input[type="email"] {
-            flex: 1 1 280px;
-            min-height: 46px;
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.18);
-            background: rgba(0, 0, 0, 0.48);
-            color: var(--text);
-            padding: 0.75rem 0.9rem;
-            font: inherit;
-        }
-
-        #newsletter-form input[type="email"]::placeholder {
-            color: #9ea7ab;
-        }
-
-        #newsletter-form input[type="email"]:focus-visible {
-            outline: 2px solid rgba(123, 255, 123, 0.5);
-            outline-offset: 2px;
-            border-color: rgba(123, 255, 123, 0.55);
-        }
-
-        #newsletter-form button[type="submit"] {
-            min-height: 46px;
-            border: 1px solid rgba(123, 255, 123, 0.4);
-            border-radius: 12px;
-            background: var(--accent);
-            color: #001000;
-            padding: 0.7rem 1.15rem;
-            font: inherit;
-            font-weight: 800;
-            cursor: pointer;
-            transition: transform 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
-            box-shadow: 0 12px 28px rgba(123, 255, 123, 0.25);
-        }
-
-        #newsletter-form button[type="submit"]:hover,
-        #newsletter-form button[type="submit"]:focus-visible {
-            background: #90ff90;
-            transform: translateY(-1px);
-        }
-
-        .newsletter-success {
-            border: 1px solid rgba(123, 255, 123, 0.36);
-            border-radius: 12px;
-            background: rgba(123, 255, 123, 0.12);
-            color: #dfffdf;
-            padding: 0.8rem 0.95rem;
-            font-weight: 700;
-            width: fit-content;
-        }
-
-        @media (max-width: 640px) {
-            .container {
-                width: min(var(--container), calc(100% - 1.2rem));
-            }
-
-            .topbar-inner {
-                min-height: 64px;
-            }
-
-            .actions {
-                justify-content: flex-start;
-            }
-
-            .hero {
-                padding-top: 2.4rem;
-            }
-
-            .hero-shell {
-                padding: 1rem;
-            }
-
-            .post-item {
-                padding: 1rem;
-            }
-        }
+        body { background: #050505; color: #fff; font-family: sans-serif; margin: 0; padding: 0; line-height: 1.6; }
+        header { padding: 40px 20px; text-align: center; border-bottom: 1px solid #222; }
+        h1 { color: #00ff66; margin-bottom: 10px; }
+        .container { max-width: 800px; margin: 0 auto; padding: 40px 20px; }
+        .card { background: #111; padding: 20px; border-radius: 8px; border: 1px solid #222; margin-bottom: 20px; }
+        .newsletter-section { background: #0a0a0a; padding: 40px 20px; text-align: center; border-top: 1px solid #222; margin-top: 40px; }
+        input[type="email"] { width: 100%; max-width: 300px; padding: 10px; background: #000; border: 1px solid #333; color: #fff; border-radius: 4px; margin-bottom: 10px; }
+        button { background: #00ff66; color: #000; border: none; padding: 10px 20px; font-weight: bold; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #00cc55; }
+        footer { text-align: center; padding: 20px; font-size: 0.8em; color: #666; }
+        footer a { color: #888; text-decoration: none; }
+        footer a:hover { color: #bbb; }
+        .hidden { display: none; }
+        .nav-links { margin-top: 20px; }
+        .nav-links a { color: #fff; margin: 0 10px; text-decoration: none; font-weight: bold; }
+        .nav-links a:hover { color: #00ff66; }
     </style>
 </head>
 <body>
-    <header class="topbar">
-        <div class="container topbar-inner">
-            <a class="logo" href="index.html">Solo <span>Productivity</span></a>
-            <div class="actions">
-                <a class="btn btn-secondary" href="index.html" aria-label="Go back to homepage">Back to Home</a>
-                <a class="btn btn-primary" href="#" aria-label="Download Solo Productivity for free">
-                    <svg class="play-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                        <path d="M4.8 3.2a1 1 0 0 0-1.6.8v16a1 1 0 0 0 1.6.8L20 12 4.8 3.2z"></path>
-                    </svg>
-                    Download for Free
-                </a>
-            </div>
+    <header>
+        <h1>Solo Archive</h1>
+        <p>All insights and updates for Solo Productivity.</p>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="blog.html">Blog</a>
         </div>
     </header>
 
-    <main>
-        <section class="hero">
-            <div class="container hero-shell">
-                <span class="eyebrow">Archive</span>
-                <h1>All Productivity Insights</h1>
-                <p class="lead">Browse every guide and article from Solo Productivity in one clean, scrollable timeline.</p>
-                <div class="hero-cta">
-                    <a class="btn btn-primary" href="#" aria-label="Download Solo Productivity for free">
-                        <svg class="play-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                            <path d="M4.8 3.2a1 1 0 0 0-1.6.8v16a1 1 0 0 0 1.6.8L20 12 4.8 3.2z"></path>
-                        </svg>
-                        Download for Free
-                    </a>
-                </div>
-            </div>
-        </section>
-
-        <section class="archive">
-            <div class="container">
-                <div class="archive-list" id="archiveList">
-                    <article class="post-item">
-                        <span class="post-meta">Loading</span>
-                        <h2 class="post-title">Fetching latest insights...</h2>
-                        <p class="post-excerpt">Your article archive will appear here automatically.</p>
-                    </article>
-                </div>
-            </div>
-        </section>
-
-        <section class="newsletter-wrap" aria-label="Newsletter signup">
-            <div class="container">
-                <div class="newsletter-shell">
-                    <h2>Get Weekly Solo Focus Missions</h2>
-                    <p>One short email with practical tactics to protect your focus and ship meaningful work.</p>
-                    <form id="newsletter-form" action="https://script.google.com/macros/s/AKfycbywC3QOCxHClYaazsepgULnW1zJo_0fXX5rS7Ms6iZkG6uTVi9gI-WabX3nywQQwi79/exec" method="POST">
-                        <input type="email" name="email" required placeholder="Enter your email">
-                        <button type="submit">Join</button>
-                    </form>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <footer class="site-footer">
-        <div class="container footer-inner">
-            <p>&copy; 2026 RetroGigz</p>
-            <div class="footer-links">
-                <a href="unsubscribe.html">Manage Subscription</a>
-            </div>
+    <div class="container">
+        <div id="all-posts">
+            <p style="color: #888;">Fetching latest insights...</p>
         </div>
+    </div>
+
+    <div class="newsletter-section" id="newsletter-box">
+        <h3>Join the Mission</h3>
+        <p>Get one hard-mode productivity tip every Sunday.</p>
+        <form action="https://script.google.com/macros/s/AKfycbywC3QOCxHClYaazsepgULnW1zJo_0fXX5rS7Ms6iZkG6uTVi9gI-WabX3nywQQwi79/exec" method="GET" target="ghost_frame" onsubmit="showSuccess()">
+            <input type="hidden" name="action" value="subscribe">
+            <input type="email" name="email" placeholder="Enter your email" required>
+            <button type="submit">Join</button>
+        </form>
+    </div>
+
+    <iframe name="ghost_frame" class="hidden"></iframe>
+
+    <footer>
+        <p>&copy; 2026 RetroGigz. All rights reserved.</p>
+        <p><a href="unsubscribe.html">Manage Subscription</a></p>
     </footer>
 
     <script>
-        const archiveList = document.getElementById("archiveList");
-        const yearEl = document.getElementById("year");
-        const newsletterForm = document.getElementById("newsletter-form");
-
-        yearEl.textContent = new Date().getFullYear();
-
-        function escapeHtml(value) {
-            return String(value)
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/\"/g, "&quot;")
-                .replace(/'/g, "&#39;");
+        // Handle Newsletter Success UI
+        function showSuccess() {
+            setTimeout(() => {
+                document.getElementById('newsletter-box').innerHTML = `
+                    <h3 style="color: #00ff66;">Welcome to the mission.</h3>
+                    <p>Check your inbox for the welcome email. Stay focused.</p>
+                `;
+            }, 500);
         }
 
-        function formatDate(dateText) {
-            const parsed = new Date(dateText);
-            if (Number.isNaN(parsed.getTime())) {
-                return "Recently";
-            }
-
-            return parsed.toLocaleDateString(undefined, {
-                year: "numeric",
-                month: "short",
-                day: "numeric"
-            });
-        }
-
-        function renderEmptyState() {
-            archiveList.innerHTML = `
-                <article class="empty-state">
-                    <h2>Check back tomorrow for our first guide on subscription-free focus.</h2>
-                    <p>As soon as posts are available in blog/posts.json, they will automatically appear here.</p>
-                </article>
-            `;
-        }
-
-        async function loadArchivePosts() {
+        // Fetch All Posts
+        async function loadAllPosts() {
+            const container = document.getElementById('all-posts');
             try {
-                const response = await fetch("./blog/posts.json", { cache: "no-store" });
-                if (!response.ok) {
-                    throw new Error("Unable to load posts.json");
-                }
-
+                const response = await fetch('./posts.json');
+                if (!response.ok) throw new Error('Failed to load posts');
+                
                 const posts = await response.json();
-                if (!Array.isArray(posts) || posts.length === 0) {
-                    throw new Error("No post data found");
-                }
-
-                const sortedPosts = posts
-                    .slice()
-                    .sort((a, b) => new Date(b.date) - new Date(a.date));
-
-                archiveList.innerHTML = sortedPosts
-                    .map((post) => {
-                        const title = escapeHtml(post.title || "Untitled Article");
-                        const excerpt = escapeHtml(post.excerpt || "Read the full article for more details.");
-                        const url = escapeHtml(post.url || "#");
-                        const date = formatDate(post.date);
-
-                        return `
-                            <article class="post-item">
-                                <span class="post-meta">${date}</span>
-                                <h2 class="post-title"><a href="${url}">${title}</a></h2>
-                                <p class="post-excerpt">${excerpt}</p>
-                            </article>
-                        `;
-                    })
-                    .join("");
-            } catch (error) {
-                renderEmptyState();
-            }
-        }
-
-        async function submitNewsletterForm(event) {
-            event.preventDefault();
-
-            const submitButton = newsletterForm.querySelector("button[type='submit']");
-            const originalLabel = submitButton.textContent;
-            submitButton.disabled = true;
-            submitButton.textContent = "Joining...";
-
-            try {
-                const formData = new FormData(newsletterForm);
-                const response = await fetch(newsletterForm.action, {
-                    method: "POST",
-                    body: formData
+                container.innerHTML = ''; 
+                
+                posts.forEach(post => {
+                    container.innerHTML += `
+                        <div class="card">
+                            <h3 style="color: #00ff66; margin-top: 0;">${post.title}</h3>
+                            <p style="color: #888; font-size: 0.85em;">${post.date}</p>
+                            <p>${post.excerpt}</p>
+                            <a href="${post.url}" style="color: #fff; font-weight: bold; text-decoration: none; border-bottom: 1px solid #00ff66;">Read More</a>
+                        </div>
+                    `;
                 });
-
-                if (!response.ok) {
-                    throw new Error("Newsletter request failed");
-                }
-
-                newsletterForm.outerHTML = '<p class="newsletter-success">Thanks for joining!</p>';
             } catch (error) {
-                submitButton.disabled = false;
-                submitButton.textContent = originalLabel;
+                console.error('Error fetching articles:', error);
+                container.innerHTML = '<p style="color: #ff4444;">Failed to load the archive. Please refresh the page.</p>';
             }
         }
-
-        if (newsletterForm) {
-            newsletterForm.addEventListener("submit", submitNewsletterForm);
-        }
-
-        loadArchivePosts();
+        
+        document.addEventListener('DOMContentLoaded', loadAllPosts);
     </script>
 </body>
 </html>
