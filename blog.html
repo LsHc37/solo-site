@@ -95,5 +95,36 @@
         
         document.addEventListener('DOMContentLoaded', loadAllPosts);
     </script>
+<script>
+document.addEventListener("DOMContentLoaded", async function() {
+    const archive = document.getElementById('full-blog-archive');
+    try {
+        // Path adjusted depending on where blog.html is located relative to posts.json
+        const response = await fetch('./blog/posts.json'); 
+        if (!response.ok) throw new Error('Failed to fetch JSON');
+        
+        const posts = await response.json();
+        archive.innerHTML = ''; 
+        
+        posts.forEach(post => {
+            archive.innerHTML += `
+                <div style="background: #111; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #222;">
+                    <span style="background: #0d2214; color: #00ff66; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; text-transform: uppercase;">Article</span>
+                    <h3 style="color: #fff; margin: 15px 0 10px 0; font-family: sans-serif;">${post.title}</h3>
+                    <p style="color: #aaa; font-family: sans-serif; font-size: 0.95rem; line-height: 1.5; margin-bottom: 15px;">${post.summary}</p>
+                    <a href="${post.url}" style="color: #00ff66; text-decoration: none; font-weight: bold; font-family: sans-serif;">Read Post →</a>
+                </div>
+            `;
+        });
+    } catch (error) {
+        console.error("Error loading blog archive:", error);
+        archive.innerHTML = `
+            <div style="background: #111; padding: 20px; border-radius: 12px; border: 1px solid #ff4444; text-align: center;">
+                <p style="color: #ff4444; font-family: sans-serif;">Error: Could not load the archive. Ensure posts.json is generated.</p>
+            </div>
+        `;
+    }
+});
+</script>
 </body>
 </html>
