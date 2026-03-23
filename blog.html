@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog | Solo Productivity</title>
+    <style>
+        body { background: #050505; color: #fff; font-family: sans-serif; margin: 0; padding: 0; line-height: 1.6; }
+        header { padding: 40px 20px; text-align: center; border-bottom: 1px solid #222; }
+        h1 { color: #00ff66; margin-bottom: 10px; }
+        .container { max-width: 800px; margin: 0 auto; padding: 40px 20px; }
+        .card { background: #111; padding: 20px; border-radius: 8px; border: 1px solid #222; margin-bottom: 20px; }
+        .newsletter-section { background: #0a0a0a; padding: 40px 20px; text-align: center; border-top: 1px solid #222; margin-top: 40px; }
+        input[type="email"] { width: 100%; max-width: 300px; padding: 10px; background: #000; border: 1px solid #333; color: #fff; border-radius: 4px; margin-bottom: 10px; }
+        button { background: #00ff66; color: #000; border: none; padding: 10px 20px; font-weight: bold; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #00cc55; }
+        footer { text-align: center; padding: 20px; font-size: 0.8em; color: #666; }
+        footer a { color: #888; text-decoration: none; }
+        footer a:hover { color: #bbb; }
+        .hidden { display: none; }
+        .nav-links { margin-top: 20px; }
+        .nav-links a { color: #fff; margin: 0 10px; text-decoration: none; font-weight: bold; }
+        .nav-links a:hover { color: #00ff66; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Solo Archive</h1>
+        <p>All insights and updates for Solo Productivity.</p>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="blog.html">Blog</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <div id="full-blog-archive">
+            <p style="color: #888;">Fetching latest insights...</p>
+        </div>
+    </div>
+
+    <div class="newsletter-section" id="newsletter-box">
+        <h3>Join the Mission</h3>
+        <p>Get one hard-mode productivity tip every Sunday.</p>
+        <form action="https://script.google.com/macros/s/AKfycbywC3QOCxHClYaazsepgULnW1zJo_0fXX5rS7Ms6iZkG6uTVi9gI-WabX3nywQQwi79/exec" method="GET" target="ghost_frame" onsubmit="showSuccess()">
+            <input type="hidden" name="action" value="subscribe">
+            <input type="email" name="email" placeholder="Enter your email" required>
+            <button type="submit">Join</button>
+        </form>
+    </div>
+
+    <iframe name="ghost_frame" class="hidden"></iframe>
+
+    <footer>
+        <p>&copy; 2026 RetroGigz. All rights reserved.</p>
+        <p><a href="unsubscribe.html">Manage Subscription</a></p>
+    </footer>
+
+    <script>
+        // Handle Newsletter Success UI
+        function showSuccess() {
+            setTimeout(() => {
+                document.getElementById('newsletter-box').innerHTML = `
+                    <h3 style="color: #00ff66;">Welcome to the mission.</h3>
+                    <p>Check your inbox for the welcome email. Stay focused.</p>
+                `;
+            }, 500);
+        }
+
+        function escapeHtml(value) {
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/\"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        async function loadAllPosts() {
+            const archive = document.getElementById('full-blog-archive');
+            const postsPath = '/posts.json';
+
+            if (!archive) {
+                console.error('[BlogArchive] Missing #full-blog-archive container.');
+                return;
+            }
+
+            try {
+                console.log(`[BlogArchive] Fetching posts from: ${postsPath}`);
+                const response = await fetch(postsPath, { cache: 'no-store' });
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status} while fetching ${postsPath}`);
+                }
+
+                const posts = await response.json();
+                if (!Array.isArray(posts)) {
+                    throw new Error(`Invalid JSON shape from ${postsPath}: expected an array`);
+                }
+
+                archive.innerHTML = '';
+                posts.forEach((post) => {
+                    const title = escapeHtml(post.title || 'Untitled Article');
+                    const date = escapeHtml(post.date || 'Recent');
+                    const excerpt = escapeHtml(post.excerpt || 'Read the full article for more details.');
+                    const url = escapeHtml(post.url || '#');
+
+                    archive.innerHTML += `
+                        <div class="card">
+                            <h3 style="color: #00ff66; margin-top: 0;">${title}</h3>
+                            <p style="color: #888; font-size: 0.85em;">${date}</p>
+                            <p>${excerpt}</p>
+                            <a href="${url}" style="color: #fff; font-weight: bold; text-decoration: none; border-bottom: 1px solid #00ff66;">Read More</a>
+                        </div>
+                    `;
+                });
+            } catch (error) {
+                console.error(`[BlogArchive] Failed fetch path: ${postsPath}`, error);
+                archive.innerHTML = '<p style="color: #ff4444;">Failed to load the archive. Check posts.json path and JSON format.</p>';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadAllPosts);
+    </script>
+</body>
+</html>

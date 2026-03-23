@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solo Productivity | By RetroGigz</title>
+    <style>
+        body { background: #050505; color: #fff; font-family: sans-serif; margin: 0; padding: 0; line-height: 1.6; }
+        header { padding: 40px 20px; text-align: center; border-bottom: 1px solid #222; }
+        h1 { color: #00ff66; margin-bottom: 10px; }
+        .container { max-width: 800px; margin: 0 auto; padding: 40px 20px; }
+        .hero-section { max-width: 800px; margin: 0 auto; padding: 50px 20px 20px; text-align: center; }
+        .hero-card { background: #111; border: 1px solid #222; border-radius: 8px; padding: 36px 24px; }
+        .hero-title { color: #00ff66; margin: 0 0 10px; font-size: 2.4rem; line-height: 1.15; }
+        .hero-subtext { margin: 0 0 24px; color: #fff; font-size: 1.1rem; }
+        .download-btn { display: inline-block; background: #00ff66; color: #000; text-decoration: none; font-weight: 800; padding: 14px 34px; border-radius: 6px; border: 1px solid #00ff66; font-size: 1.05rem; }
+        .download-btn:hover { background: #00cc55; border-color: #00cc55; }
+        .about-section { max-width: 800px; margin: 0 auto; padding: 20px 20px 0; }
+        .card { background: #111; padding: 20px; border-radius: 8px; border: 1px solid #222; margin-bottom: 20px; }
+        .newsletter-section { background: #0a0a0a; padding: 40px 20px; text-align: center; border-top: 1px solid #222; margin-top: 40px; }
+        input[type="email"] { width: 100%; max-width: 300px; padding: 10px; background: #000; border: 1px solid #333; color: #fff; border-radius: 4px; margin-bottom: 10px; }
+        button { background: #00ff66; color: #000; border: none; padding: 10px 20px; font-weight: bold; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #00cc55; }
+        footer { text-align: center; padding: 20px; font-size: 0.8em; color: #666; }
+        footer a { color: #888; text-decoration: none; }
+        footer a:hover { color: #bbb; }
+        .hidden { display: none; }
+        .nav-links { margin-top: 20px; }
+        .nav-links a { color: #fff; margin: 0 10px; text-decoration: none; font-weight: bold; }
+        .nav-links a:hover { color: #00ff66; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Solo Productivity</h1>
+        <p>Focus offline. No distractions. 100% Free.</p>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="blog.html">Blog</a>
+        </div>
+    </header>
+
+    <section class="hero-section" aria-label="Welcome">
+        <div class="hero-card">
+            <h2 class="hero-title">Solo Productivity</h2>
+            <p class="hero-subtext">Focus offline. No distractions. 100% Free.</p>
+            <a class="download-btn" href="#newsletter-box">Download for Free</a>
+        </div>
+    </section>
+
+    <section class="about-section" aria-label="About the App">
+        <div class="card">
+            <h2 style="margin-top: 0; color: #fff;">Built for Independent Achievers</h2>
+            <p style="margin-bottom: 0; color: #ddd;">Solo Productivity is designed for people who execute without noise. Track ghost runs with GPS precision, organize your priorities, and keep every task local and fully offline so your focus stays yours.</p>
+        </div>
+    </section>
+
+    <div class="container">
+        <h2>Recent Insights</h2>
+        <div id="recent-posts-feed">
+            <p style="color: #888;">Loading latest articles...</p>
+        </div>
+    </div>
+
+    <div class="newsletter-section" id="newsletter-box">
+        <h3>Join the Mission</h3>
+        <p>Get one hard-mode productivity tip every Sunday.</p>
+        <form action="https://script.google.com/macros/s/AKfycbywC3QOCxHClYaazsepgULnW1zJo_0fXX5rS7Ms6iZkG6uTVi9gI-WabX3nywQQwi79/exec" method="GET" target="ghost_frame" onsubmit="showSuccess()">
+            <input type="hidden" name="action" value="subscribe">
+            <input type="email" name="email" placeholder="Enter your email" required>
+            <button type="submit">Join</button>
+        </form>
+    </div>
+
+    <iframe name="ghost_frame" class="hidden"></iframe>
+
+    <footer>
+        <p>&copy; 2026 RetroGigz. All rights reserved.</p>
+        <p><a href="unsubscribe.html">Manage Subscription</a></p>
+    </footer>
+
+    <script>
+        // Handle Newsletter Success UI
+        function showSuccess() {
+            setTimeout(() => {
+                document.getElementById('newsletter-box').innerHTML = `
+                    <h3 style="color: #00ff66;">Welcome to the mission.</h3>
+                    <p>Check your inbox for the welcome email. Stay focused.</p>
+                `;
+            }, 500);
+        }
+
+        function escapeHtml(value) {
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/\"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        async function loadRecentPosts() {
+            const feed = document.getElementById('recent-posts-feed');
+            const postsPath = '/posts.json';
+
+            if (!feed) {
+                console.error('[RecentPosts] Missing #recent-posts-feed container.');
+                return;
+            }
+
+            try {
+                console.log(`[RecentPosts] Fetching posts from: ${postsPath}`);
+                const response = await fetch(postsPath, { cache: 'no-store' });
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status} while fetching ${postsPath}`);
+                }
+
+                const posts = await response.json();
+                if (!Array.isArray(posts)) {
+                    throw new Error(`Invalid JSON shape from ${postsPath}: expected an array`);
+                }
+
+                feed.innerHTML = '';
+                posts.slice(0, 3).forEach((post) => {
+                    const title = escapeHtml(post.title || 'Untitled Article');
+                    const date = escapeHtml(post.date || 'Recent');
+                    const excerpt = escapeHtml(post.excerpt || 'Read the full article for more details.');
+                    const url = escapeHtml(post.url || '#');
+
+                    feed.innerHTML += `
+                        <div class="card">
+                            <h3 style="color: #00ff66; margin-top: 0;">${title}</h3>
+                            <p style="color: #888; font-size: 0.85em;">${date}</p>
+                            <p>${excerpt}</p>
+                            <a href="${url}" style="color: #fff; font-weight: bold; text-decoration: none; border-bottom: 1px solid #00ff66;">Read More</a>
+                        </div>
+                    `;
+                });
+            } catch (error) {
+                console.error(`[RecentPosts] Failed fetch path: ${postsPath}`, error);
+                feed.innerHTML = '<p style="color: #ff4444;">Unable to load recent articles. Please check posts.json path and JSON format.</p>';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadRecentPosts);
+    </script>
+</body>
+</html>
