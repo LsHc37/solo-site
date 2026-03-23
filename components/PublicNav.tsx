@@ -8,6 +8,7 @@ const NAV_LINKS = [
   { href: "/", label: "Home", exact: true },
   { href: "/games", label: "Games" },
   { href: "/solo", label: "Solo" },
+  { href: "/kickstart", label: "Get Custom Plan" },
   { href: "/community", label: "Community" },
   { href: "/faq", label: "FAQ" },
   { href: "/contact", label: "Contact" },
