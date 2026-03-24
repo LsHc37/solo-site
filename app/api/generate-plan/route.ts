@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import OpenAI from "openai";
 
 const openai = new OpenAI({
@@ -7,55 +7,43 @@ const openai = new OpenAI({
 
 const SYSTEM_PROMPT = `You are a strict, data-driven Life OS compiler. Read the user input and output ONLY valid JSON. 
 CRITICAL RULES:
-1. TO-DOS: No vague advice. To-dos MUST have exact numbers or times (e.g., 'Drink 128oz water', 'Eat 50g protein before noon').
+1. TO-DOS: No vague advice. To-dos MUST have exact numbers or times (e.g., 'Drink 128oz water').
 2. GOALS: The 'target' must be a specific, trackable number.
 3. Output strict JSON matching the schema (user_profile with macros, and injections with todos, goals, and alarms). No markdown.`;
 
-export async function POST(request: NextRequest) {
+export async function POST(req: Request) {
   try {
-    const { userInput } = await request.json();
+    const { userInput } = await req.json();
 
     if (!userInput) {
-      return NextResponse.json(
-        { error: "userInput is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "No input provided" }, { status: 400 });
     }
 
-    const message = await openai.messages.create({
+    const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
-      max_tokens: 1024,
-      system: SYSTEM_PROMPT,
+      response_format: { type: "json_object" },
       messages: [
-        {
-          role: "user",
-          content: userInput,
-        },
+        { role: "system", content: SYSTEM_PROMPT },
+        { role: "user", content: userInput }
       ],
     });
 
-    // Extract the response text
-    const responseText =
-      message.content[0].type === "text" ? message.content[0].text : "";
+    const rawJson = completion.choices[0].message.content;
+    if (!rawJson) throw new Error("No response from AI");
+    
+    const parsedData = JSON.parse(rawJson);
+    
+    // Inject the default workout library as requested
+    if (!parsedData.injections) parsedData.injections = {};
+    parsedData.injections.master_workout_library = [
+      { name: "Upper Body Strength A", duration_minutes: 45, focus: "push_pull" },
+      { name: "Lower Body Power B", duration_minutes: 50, focus: "legs_glutes" },
+      { name: "Conditioning Circuit C", duration_minutes: 30, focus: "cardio_core" }
+    ];
 
-    // Parse the JSON response from the AI
-    const aiResponse = JSON.parse(responseText);
-
-    // Add master_workout_library to injections
-    const mergedResponse = {
-      ...aiResponse,
-      injections: {
-        ...aiResponse.injections,
-        master_workout_library: [],
-      },
-    };
-
-    return NextResponse.json(mergedResponse);
+    return NextResponse.json(parsedData);
   } catch (error) {
-    console.error("Error generating plan:", error);
-    return NextResponse.json(
-      { error: "Failed to generate plan" },
-      { status: 500 }
-    );
+    console.error("AI Generation Error:", error);
+    return NextResponse.json({ error: "Failed to generate plan" }, { status: 500 });
   }
 }
