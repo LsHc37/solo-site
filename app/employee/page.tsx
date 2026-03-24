@@ -25,7 +25,7 @@ interface Sale {
 }
 
 export default function EmployeePortal() {
-  const { data: session, status } = useSession();
+  const { data: session, status } = useSession() || {};
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [currentEntry, setCurrentEntry] = useState<TimeEntry | null>(null);
