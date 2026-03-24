@@ -332,7 +332,6 @@ function BuilderPreview({
         {(layouts[page] ?? []).filter((section) => section.visible).map((section) => (
           <EditableSection
             key={section.id}
-            sectionId={section.id}
             label={section.label}
             selected={selectedSectionType === section.type}
             onSelect={() => onSelectSection?.(section.type)}

@@ -140,7 +140,7 @@ export default function KickstartPage() {
                 <input
                   type="text"
                   required
-                  placeholder="e.g. 5'11\" or 180 cm"
+                  placeholder="e.g. 5'11\ or 180 cm"
                   value={formData.height}
                   onChange={(event) => handleChange("height", event.target.value)}
                   className="h-11 rounded-xl border px-3 text-sm"
