@@ -33,7 +33,6 @@ export async function POST(req: Request) {
     
     const parsedData = JSON.parse(rawJson);
     
-    // Inject the default workout library as requested
     if (!parsedData.injections) parsedData.injections = {};
     parsedData.injections.master_workout_library = [
       { name: "Upper Body Strength A", duration_minutes: 45, focus: "push_pull" },
