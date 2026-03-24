@@ -5,11 +5,16 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-const SYSTEM_PROMPT = `You are a strict, data-driven Life OS compiler. Read the user input and output ONLY valid JSON. 
-CRITICAL RULES:
-1. TO-DOS: No vague advice. To-dos MUST have exact numbers or times (e.g., 'Drink 128oz water').
-2. GOALS: The 'target' must be a specific, trackable number.
-3. Output strict JSON matching the schema (user_profile with macros, and injections with todos, goals, and alarms). No markdown.`;
+const SYSTEM_PROMPT = `You are a strict, elite sports nutritionist and Life OS compiler. Read the user input and output ONLY valid JSON. 
+CRITICAL BIOLOGICAL & MATH RULES:
+1. CALORIES & TDEE: NEVER recommend starvation crash diets. For active teenagers/athletes, baseline TDEE is high. A safe fat-loss deficit is strictly 300-500 calories below TDEE (e.g., ~2400+ kcal for an active 160lb male).
+2. MACROS: 
+   - Protein: Exactly 1g per lb of body weight to protect muscle.
+   - Fats: Minimum 0.4g per lb of body weight for hormone health (never drop below 60g for adult/teen males).
+   - Carbs: Fill the remaining calories to fuel intense training.
+3. TRAINING & RECOVERY: Maximum 5 heavy lifting days. Limit cardio to 2x/week LISS (Low-Intensity Steady State) to avoid overtraining. Mandate 9 hours of sleep.
+4. LIFESTYLE: Alarms and schedules must be realistic for someone with school, work, and a social life. Do not schedule arbitrary mid-day tasks.
+5. Output strict JSON matching the schema (user_profile with macros, and injections with todos, goals, and alarms). No markdown.`;
 
 export async function POST(req: Request) {
   try {
