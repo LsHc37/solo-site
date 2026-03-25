@@ -5,44 +5,13 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-const SYSTEM_PROMPT = `You are an elite sports nutritionist. You must output a JSON object that EXACTLY matches the template below. 
-DO NOT change key names. DO NOT move blocks. DO NOT omit the requiresPro booleans.
+const SYSTEM_PROMPT = `You are an elite sports nutritionist. You must calculate macros (1g protein/lb, 0.4g fat/lb, rest carbs, 300-500 cal deficit). 
 
 CRITICAL PAYWALL RULES:
-- The first 5 'todos' MUST have "requiresPro": false. Any additional todos must have "requiresPro": true.
-- The first 2 'goals' MUST have "requiresPro": false. Any additional goals must have "requiresPro": true.
-- ALL 'alarms' MUST have "requiresPro": false.
-- ALL 'master_workout_library' items MUST have "requiresPro": true.
-
-COPY THIS EXACT TEMPLATE AND FILL IN THE VALUES:
-{
-  "user_profile": {
-    "age": <number>,
-    "weight": <number>,
-    "gender": "<string>",
-    "macros": {
-      "calories": <number>,
-      "protein": <number>,
-      "carbohydrates": <number>,
-      "fats": <number>
-    }
-  },
-  "injections": {
-    "todos": [
-      { "task": "<string>", "frequency": "<string>", "requiresPro": <boolean> }
-    ],
-    "goals": [
-      { "goal": "<string>", "target": <number>, "requiresPro": <boolean> }
-    ],
-    "alarms": [
-      { "time": "<HH:MM>", "description": "<string>", "requiresPro": <boolean> }
-    ],
-    "master_workout_library": [
-      { "name": "<string>", "focus": "<string>", "requiresPro": true }
-    ],
-    "master_workout_library_requires_pro": true
-  }
-}`;
+- Generate 5 'todos', 2 'goals', and 2 'alarms' and set their "requiresPro" to false. 
+- If you generate any additional todos (6+) or goals (3+), set their "requiresPro" to true.
+- Generate 3 'master_workout_library' routines and set their "requiresPro" to true.
+- Set "master_workout_library_requires_pro" to true.`;
 
 export async function POST(req: Request) {
   try {
@@ -54,25 +23,111 @@ export async function POST(req: Request) {
 
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
-      response_format: { type: "json_object" },
       messages: [
         { role: "system", content: SYSTEM_PROMPT },
         { role: "user", content: userInput }
       ],
-      temperature: 0.2 // Lowered temperature forces the AI to be less creative and stick to the schema
+      response_format: {
+        type: "json_schema",
+        json_schema: {
+          name: "solo_fitness_plan",
+          strict: true,
+          schema: {
+            type: "object",
+            properties: {
+              user_profile: {
+                type: "object",
+                properties: {
+                  age: { type: "number" },
+                  weight: { type: "number" },
+                  gender: { type: "string" },
+                  macros: {
+                    type: "object",
+                    properties: {
+                      calories: { type: "number" },
+                      protein: { type: "number" },
+                      carbohydrates: { type: "number" },
+                      fats: { type: "number" }
+                    },
+                    required: ["calories", "protein", "carbohydrates", "fats"],
+                    additionalProperties: false
+                  }
+                },
+                required: ["age", "weight", "gender", "macros"],
+                additionalProperties: false
+              },
+              injections: {
+                type: "object",
+                properties: {
+                  todos: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        task: { type: "string" },
+                        frequency: { type: "string" },
+                        requiresPro: { type: "boolean" }
+                      },
+                      required: ["task", "frequency", "requiresPro"],
+                      additionalProperties: false
+                    }
+                  },
+                  goals: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        goal: { type: "string" },
+                        target: { type: "number" },
+                        requiresPro: { type: "boolean" }
+                      },
+                      required: ["goal", "target", "requiresPro"],
+                      additionalProperties: false
+                    }
+                  },
+                  alarms: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        time: { type: "string" },
+                        description: { type: "string" },
+                        requiresPro: { type: "boolean" }
+                      },
+                      required: ["time", "description", "requiresPro"],
+                      additionalProperties: false
+                    }
+                  },
+                  master_workout_library: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        name: { type: "string" },
+                        focus: { type: "string" },
+                        requiresPro: { type: "boolean" }
+                      },
+                      required: ["name", "focus", "requiresPro"],
+                      additionalProperties: false
+                    }
+                  },
+                  master_workout_library_requires_pro: { type: "boolean" }
+                },
+                required: ["todos", "goals", "alarms", "master_workout_library", "master_workout_library_requires_pro"],
+                additionalProperties: false
+              }
+            },
+            required: ["user_profile", "injections"],
+            additionalProperties: false
+          }
+        }
+      }
     });
 
     const rawJson = completion.choices[0].message.content;
     if (!rawJson) throw new Error("No response from AI");
-    
-    let parsedData = JSON.parse(rawJson);
-    
-    // Server-Side Safety Net: If the AI still forgets the bottom flag, we inject it manually before sending to the app.
-    if (parsedData.injections && parsedData.injections.master_workout_library_requires_pro === undefined) {
-      parsedData.injections.master_workout_library_requires_pro = true;
-    }
 
-    return NextResponse.json(parsedData);
+    return NextResponse.json(JSON.parse(rawJson));
   } catch (error) {
     console.error("AI Generation Error:", error);
     return NextResponse.json({ error: "Failed to generate plan" }, { status: 500 });
