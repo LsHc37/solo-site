@@ -5,16 +5,33 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-const SYSTEM_PROMPT = `You are a strict, elite sports nutritionist and Life OS compiler. Read the user input and output ONLY valid JSON. 
+const SYSTEM_PROMPT = `You are a strict, elite sports nutritionist and Life OS compiler. Read the user input and output ONLY valid JSON matching the exact schema provided.
+
 CRITICAL BIOLOGICAL & MATH RULES:
-1. CALORIES & TDEE: NEVER recommend starvation crash diets. For active teenagers/athletes, baseline TDEE is high. A safe fat-loss deficit is strictly 300-500 calories below TDEE (e.g., ~2400+ kcal for an active 160lb male).
-2. MACROS: 
-   - Protein: Exactly 1g per lb of body weight to protect muscle.
-   - Fats: Minimum 0.4g per lb of body weight for hormone health (never drop below 60g for adult/teen males).
-   - Carbs: Fill the remaining calories to fuel intense training.
-3. TRAINING & RECOVERY: Maximum 5 heavy lifting days. Limit cardio to 2x/week LISS (Low-Intensity Steady State) to avoid overtraining. Mandate 9 hours of sleep.
-4. LIFESTYLE: Alarms and schedules must be realistic for someone with school, work, and a social life. Do not schedule arbitrary mid-day tasks.
-5. Output strict JSON matching the schema (user_profile with macros, and injections with todos, goals, and alarms). No markdown.`;
+1. CALORIES & TDEE: For active teenagers/athletes, baseline TDEE is high. A safe fat-loss deficit is strictly 300-500 calories below TDEE.
+2. MACROS: Protein: 1g per lb of body weight. Fats: Minimum 0.4g per lb. Carbs: Fill the rest.
+3. TRAINING: Max 5 heavy lifting days. Limit cardio to 2x/week LISS. Mandate 9 hours sleep.
+
+CRITICAL PAYWALL & ORDERING RULES:
+1. ORDER MATTERS: Put the 5 most important 'todos' FIRST. Put the 2 most important 'goals' FIRST. 
+2. FREE TIER: Set "requiresPro": false for the first 5 todos, first 2 goals, and ALL alarms.
+3. PRO TIER: Set "requiresPro": true for any additional todos (6+) and goals (3+), and ALL workouts.
+4. Set "master_workout_library_requires_pro": true at the injections level.
+
+EXACT JSON SCHEMA REQUIRED:
+{
+  "user_profile": {
+    "age": (number), "weight": (number), "gender": (string),
+    "macros": { "calories": (number), "protein": (number), "carbohydrates": (number), "fats": (number) }
+  },
+  "injections": {
+    "todos": [ { "task": (string), "frequency": (string), "requiresPro": (boolean) } ],
+    "goals": [ { "goal": (string), "target": (number), "requiresPro": (boolean) } ],
+    "alarms": [ { "time": "HH:MM", "description": (string), "requiresPro": (boolean) } ],
+    "master_workout_library": [ { "name": (string), "focus": (string), "requiresPro": true } ],
+    "master_workout_library_requires_pro": true
+  }
+}`;
 
 export async function POST(req: Request) {
   try {
@@ -38,12 +55,15 @@ export async function POST(req: Request) {
     
     const parsedData = JSON.parse(rawJson);
     
+    // Safety Fallback: Ensure the workout library exists and is locked
     if (!parsedData.injections) parsedData.injections = {};
-    parsedData.injections.master_workout_library = [
-      { name: "Upper Body Strength A", duration_minutes: 45, focus: "push_pull" },
-      { name: "Lower Body Power B", duration_minutes: 50, focus: "legs_glutes" },
-      { name: "Conditioning Circuit C", duration_minutes: 30, focus: "cardio_core" }
-    ];
+    if (!parsedData.injections.master_workout_library) {
+      parsedData.injections.master_workout_library = [
+        { name: "Upper Body Strength A", focus: "Push / Pull", requiresPro: true },
+        { name: "Lower Body Power B", focus: "Legs / Glutes", requiresPro: true }
+      ];
+      parsedData.injections.master_workout_library_requires_pro = true;
+    }
 
     return NextResponse.json(parsedData);
   } catch (error) {
