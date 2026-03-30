@@ -1,7 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
+import { useToast } from "@/lib/toast-context";
+import { useConfirmDialog } from "@/lib/confirm-dialog-context";
+import { SkeletonTable } from "@/components/Skeletons";
+import { PaginationControls } from "@/components/PaginationControls";
+import { validateEmail, validatePasswordStrength, getPasswordStrengthColor, getPasswordStrengthLabel } from "@/lib/form-validation";
 
 interface Employee {
   id: number;
@@ -26,13 +31,17 @@ interface Permission {
 }
 
 export default function EmployeesPage() {
+  const { addToast } = useToast();
+  const { confirm: showConfirm } = useConfirmDialog();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [permissions, setPermissions] = useState<Permission[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
-  const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(20);
+  const [pagination, setPagination] = useState({ total: 0, pages: 0, hasNext: false, hasPrev: false });
 
   // Form state
   const [formData, setFormData] = useState({
@@ -48,16 +57,40 @@ export default function EmployeesPage() {
     selectedPermissions: [] as string[],
   });
 
-  function showToast(msg: string, ok = true) {
-    setToast({ msg, ok });
-    setTimeout(() => setToast(null), 3500);
-  }
+  // Form validation
+  const emailError = useMemo(() => {
+    if (!editingEmployee && formData.email) {
+      return validateEmail(formData.email);
+    }
+    return null;
+  }, [formData.email, editingEmployee]);
+
+  const passwordValidation = useMemo(() => {
+    if (!editingEmployee && formData.password) {
+      return validatePasswordStrength(formData.password);
+    }
+    return { isValid: true, errors: [], score: 0 };
+  }, [formData.password, editingEmployee]);
+
+  const isFormValid = useMemo(() => {
+    if (!formData.first_name.trim() || !formData.last_name.trim()) return false;
+    if (!editingEmployee) {
+      // Creating new employee: need email and valid password
+      if (!formData.email.trim()) return false;
+      if (!passwordValidation.isValid) return false;
+      return !emailError;
+    }
+    // Editing: email not required
+    return true;
+  }, [formData.first_name, formData.last_name, formData.email, passwordValidation, emailError, editingEmployee]);
 
   async function loadEmployees() {
     try {
-      const res = await fetch("/api/admin/employees");
+      const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+      const res = await fetch("/api/admin/employees?" + params);
       const data = await res.json();
-      setEmployees(data.employees || []);
+      setEmployees(data.data || []);
+      setPagination(data.meta || { total: 0, pages: 0, hasNext: false, hasPrev: false });
       setPermissions(data.permissions || []);
       setLoading(false);
     } catch (err) {
@@ -68,7 +101,7 @@ export default function EmployeesPage() {
 
   useEffect(() => {
     loadEmployees();
-  }, []);
+  }, [page, limit]);
 
   function openCreateModal() {
     setEditingEmployee(null);
@@ -126,12 +159,12 @@ export default function EmployeesPage() {
       });
 
       if (res.ok) {
-        showToast("Employee updated successfully");
+        addToast("Employee updated successfully", "success");
         loadEmployees();
         setShowModal(false);
       } else {
         const data = await res.json();
-        showToast(data.error || "Failed to update", false);
+        addToast(data.error || "Failed to update", "error");
       }
     } else {
       // Create
@@ -146,27 +179,35 @@ export default function EmployeesPage() {
       });
 
       if (res.ok) {
-        showToast("Employee created successfully");
+        addToast("Employee created successfully", "success");
         loadEmployees();
         setShowModal(false);
       } else {
         const data = await res.json();
-        showToast(data.error || "Failed to create", false);
+        addToast(data.error || "Failed to create", "error");
+        addToast(data.error || "Failed to create", "error");
       }
     }
   }
 
   async function deleteEmployee(emp: Employee) {
-    if (!confirm(`Delete ${emp.first_name} ${emp.last_name}? This cannot be undone.`)) return;
-
-    const res = await fetch(`/api/admin/employees?id=${emp.id}`, { method: "DELETE" });
-    if (res.ok) {
-      showToast("Employee deleted");
-      loadEmployees();
-    } else {
-      const data = await res.json();
-      showToast(data.error || "Failed to delete", false);
-    }
+    await showConfirm({
+      title: "Delete Employee?",
+      description: `Are you sure you want to delete ${emp.first_name} ${emp.last_name}? This action cannot be undone and will remove all associated records.`,
+      confirmText: "Delete Employee",
+      cancelText: "Cancel",
+      isDangerous: true,
+      onConfirm: async () => {
+        const res = await fetch(`/api/admin/employees?id=${emp.id}`, { method: "DELETE" });
+        if (res.ok) {
+          addToast("Employee deleted", "success");
+          loadEmployees();
+        } else {
+          const data = await res.json();
+          addToast(data.error || "Failed to delete", "error");
+        }
+      },
+    });
   }
 
   const filtered = employees.filter(
@@ -183,21 +224,19 @@ export default function EmployeesPage() {
     permissionsByCategory[p.category].push(p);
   });
 
+  if (loading) {
+    return (
+      <div className="flex flex-col gap-6">
+        <div>
+          <h1 className="text-3xl font-black" style={{ color: "var(--foreground)" }}>Employees</h1>
+        </div>
+        <SkeletonTable rows={8} columns={7} />
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-6">
-      {/* Toast */}
-      {toast && (
-        <div
-          className="fixed bottom-6 right-6 z-50 px-5 py-3 rounded-xl text-sm font-semibold shadow-xl"
-          style={{
-            backgroundColor: toast.ok ? "#00F0FF15" : "#FF000015",
-            border: `1px solid ${toast.ok ? "#00F0FF44" : "#FF000044"}`,
-            color: toast.ok ? "#00F0FF" : "#FF6B6B",
-          }}
-        >
-          {toast.msg}
-        </div>
-      )}
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -422,12 +461,17 @@ export default function EmployeesPage() {
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       className="px-3 py-2 rounded-lg text-sm outline-none"
-                      style={{ backgroundColor: "#0D1117", border: "1px solid #30363D", color: "#E6EDF3" }}
+                      style={{
+                        backgroundColor: "#0D1117",
+                        border: emailError ? "1px solid #EF4444" : "1px solid #30363D",
+                        color: "#E6EDF3",
+                      }}
                     />
+                    {emailError && <p className="text-xs" style={{ color: "#EF4444" }}>{emailError}</p>}
                   </div>
                   <div className="flex flex-col gap-2">
                     <label className="text-xs font-semibold" style={{ color: "#8B949E" }}>
-                      Password *
+                      Password * <span style={{ fontSize: "10px", color: "#8B949E" }}>({getPasswordStrengthLabel(passwordValidation.score) || "Enter password"})</span>
                     </label>
                     <input
                       type="password"
@@ -435,8 +479,36 @@ export default function EmployeesPage() {
                       value={formData.password}
                       onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                       className="px-3 py-2 rounded-lg text-sm outline-none"
-                      style={{ backgroundColor: "#0D1117", border: "1px solid #30363D", color: "#E6EDF3" }}
+                      style={{
+                        backgroundColor: "#0D1117",
+                        border: !passwordValidation.isValid && formData.password ? "1px solid #EF4444" : "1px solid #30363D",
+                        color: "#E6EDF3",
+                      }}
+                      placeholder="Min 8 chars, 1 upper, 1 number, 1 special"
                     />
+                    {passwordValidation.errors.length > 0 && (
+                      <ul className="text-xs space-y-1" style={{ color: "#EF4444" }}>
+                        {passwordValidation.errors.map((error, i) => (
+                          <li key={i}>• {error}</li>
+                        ))}
+                      </ul>
+                    )}
+                    {formData.password && (
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 h-1.5 rounded-full bg-gray-700 overflow-hidden">
+                          <div
+                            className="h-full transition-all"
+                            style={{
+                              width: `${passwordValidation.score}%`,
+                              backgroundColor: getPasswordStrengthColor(passwordValidation.score),
+                            }}
+                          />
+                        </div>
+                        <span className="text-xs font-semibold" style={{ color: getPasswordStrengthColor(passwordValidation.score) }}>
+                          {getPasswordStrengthLabel(passwordValidation.score)}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -551,7 +623,8 @@ export default function EmployeesPage() {
               <div className="flex gap-2 mt-4">
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-xl text-sm font-bold"
+                  disabled={!isFormValid}
+                  className="px-4 py-2 rounded-xl text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
                   style={{ backgroundColor: "#00F0FF", color: "#0D1117" }}
                 >
                   {editingEmployee ? "Update Employee" : "Create Employee"}
@@ -569,6 +642,24 @@ export default function EmployeesPage() {
           </div>
         </div>
       )}
+
+        {/* Pagination */}
+        {!loading && (
+          <PaginationControls
+            page={page}
+            pages={pagination.pages}
+            hasNext={pagination.hasNext}
+            hasPrev={pagination.hasPrev}
+            onPageChange={setPage}
+            itemsPerPage={limit}
+            onItemsPerPageChange={(newLimit) => {
+              setLimit(newLimit);
+              setPage(1);
+            }}
+            total={pagination.total}
+            currentCount={employees.length}
+          />
+        )}
     </div>
   );
 }

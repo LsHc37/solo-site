@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
+import { useToast } from "@/lib/toast-context";
+import { useConfirmDialog } from "@/lib/confirm-dialog-context";
+import { SkeletonList } from "@/components/Skeletons";
 
 interface FileEntry {
   name: string;
@@ -42,20 +45,16 @@ function FileIcon({ name, isDir }: { name: string; isDir: boolean }) {
 }
 
 export default function FilesPage() {
+  const { addToast } = useToast();
+  const { confirm: showConfirm } = useConfirmDialog();
   const [dir, setDir] = useState("");
   const [files, setFiles] = useState<FileEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<string | null>(null);
-  const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
   const [uploading, setUploading] = useState(false);
   const [newFolder, setNewFolder] = useState("");
   const [showFolderForm, setShowFolderForm] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  function showToast(msg: string, ok = true) {
-    setToast({ msg, ok });
-    setTimeout(() => setToast(null), 3500);
-  }
 
   const load = useCallback((targetDir: string) => {
     fetch(`/api/admin/files?dir=${encodeURIComponent(targetDir)}`)
@@ -94,17 +93,31 @@ export default function FilesPage() {
   async function deleteEntry(name: string, isDir: boolean) {
     const fullPath = dir ? `${dir}/${name}` : name;
 
+    // For folders, require typed confirmation
     if (isDir) {
-      const typed = prompt(`Type the folder name to confirm deletion: ${name}`);
+      const typed = prompt(`Type the folder name to confirm deletion:\n\n${name}`);
       if (typed !== name) {
-        showToast("Folder deletion canceled: name did not match", false);
+        addToast("Folder deletion canceled: name did not match", "error");
         return;
       }
-    } else {
-      if (!confirm(`Delete "${name}"?`)) return;
     }
 
-    const permanent = confirm("Permanently delete? Click Cancel to move to trash instead.");
+    // Ask about permanent deletion
+    let permanent = false;
+    await showConfirm({
+      title: "Delete " + (isDir ? "Folder" : "File") + "?",
+      description: `"${name}" will be ${isDir ? "permanently removed" : "moved to trash"}. You can later ${isDir ? "recover it" : "restore it from trash"}.`,
+      confirmText: "Move to Trash",
+      cancelText: "Cancel",
+      isDangerous: false,
+      onConfirm: async () => {
+        permanent = false;
+      },
+    }).catch(() => {
+      // User cancelled or clicked outside
+      return;
+    });
+
     const confirmNameParam = isDir ? `&confirmName=${encodeURIComponent(name)}` : "";
 
     const res = await fetch(`/api/admin/files?path=${encodeURIComponent(fullPath)}&permanent=${permanent}${confirmNameParam}`, {
@@ -113,11 +126,11 @@ export default function FilesPage() {
     if (res.ok) {
       const data = await res.json() as { movedToTrash?: boolean };
       setFiles((f) => f.filter((x) => x.name !== name));
-      showToast(data.movedToTrash ? `"${name}" moved to trash` : `"${name}" permanently deleted`);
+      addToast(data.movedToTrash ? `"${name}" moved to trash` : `"${name}" permanently deleted`, "success");
       if (selected === name) setSelected(null);
     } else {
       const data = await res.json() as { error?: string };
-      showToast(data.error ?? "Delete failed", false);
+      addToast(data.error ?? "Delete failed", "error");
     }
   }
 
@@ -137,15 +150,16 @@ export default function FilesPage() {
     if (res.ok) {
       const uploadedCount = data.uploaded?.length ?? 0;
       const rejectedCount = data.rejected?.length ?? 0;
-      showToast(
+      addToast(
         rejectedCount > 0
           ? `Uploaded ${uploadedCount} file(s), rejected ${rejectedCount}`
           : `Uploaded ${uploadedCount} file(s)`,
+        "success"
       );
       navigateTo(dir);
     } else {
       const reason = data.rejected?.[0];
-      showToast(reason ? `${data.error ?? "Upload failed"}: ${reason}` : (data.error ?? "Upload failed"), false);
+      addToast(reason ? `${data.error ?? "Upload failed"}: ${reason}` : (data.error ?? "Upload failed"), "error");
     }
     setUploading(false);
     e.target.value = "";
@@ -161,13 +175,13 @@ export default function FilesPage() {
       body: JSON.stringify({ dirPath: fullPath }),
     });
     if (res.ok) {
-      showToast(`Folder "${newFolder}" created`);
+      addToast(`Folder "${newFolder}" created`, "success");
       setNewFolder("");
       setShowFolderForm(false);
       navigateTo(dir);
     } else {
       const data = await res.json() as { error?: string };
-      showToast(data.error ?? "Failed", false);
+      addToast(data.error ?? "Failed", "error");
     }
   }
 
@@ -176,28 +190,26 @@ export default function FilesPage() {
   const publicPath = (dir ? `/${dir}/${selected}` : `/${selected}`).replace(/\/+/g, "/");
   const isImage = selected ? IMAGE_EXTS.has(ext(selected)) : false;
 
+  if (loading) {
+    return (
+      <div className="flex flex-col gap-6">
+        <div>
+          <h1 className="text-3xl font-black" style={{ color: "var(--foreground)" }}>File Manager</h1>
+        </div>
+        <SkeletonList items={6} />
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-6">
-      {toast && (
-        <div
-          className="fixed bottom-6 right-6 z-50 px-5 py-3 rounded-xl text-sm font-semibold shadow-xl"
-          style={{
-            backgroundColor: toast.ok ? "#00F0FF15" : "#FF000015",
-            border: `1px solid ${toast.ok ? "#00F0FF44" : "#FF000044"}`,
-            color: toast.ok ? "#00F0FF" : "#FF6B6B",
-          }}
-        >
-          {toast.msg}
-        </div>
-      )}
-
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black" style={{ color: "#E6EDF3" }}>File Manager</h1>
-          <p className="text-sm mt-1" style={{ color: "#8B949E" }}>
+          <h1 className="text-3xl font-black" style={{ color: "var(--foreground)" }}>File Manager</h1>
+          <p className="text-sm mt-1" style={{ color: "var(--muted)" }}>
             Browse and manage files in the{" "}
-            <code className="text-xs px-1 py-0.5 rounded" style={{ backgroundColor: "#21262D", color: "#00F0FF" }}>
+            <code className="text-xs px-1 py-0.5 rounded" style={{ backgroundColor: "var(--surface)", color: "var(--accent)" }}>
               /public
             </code>{" "}
             directory.

@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { PaginationControls } from "@/components/PaginationControls";
+import { useToast } from "@/lib/toast-context";
 
 interface User {
   id: number;
@@ -14,24 +16,26 @@ export default function UsersPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [pendingRole, setPendingRole] = useState<Record<number, string>>({});
-  const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
-
-  function showToast(msg: string, ok = true) {
-    setToast({ msg, ok });
-    setTimeout(() => setToast(null), 3500);
-  }
+  const { addToast } = useToast();
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(20);
+  const [pagination, setPagination] = useState({ total: 0, pages: 0, hasNext: false, hasPrev: false });
 
   const load = useCallback(() => {
+    const params = new URLSearchParams({ page: String(page), limit: String(limit) });
     fetch("/api/admin/users")
       .then((r) => r.json())
-      .then((d: { users: User[] }) => {
-        setUsers(d.users ?? []);
+      .then((d: any) => {
+        setUsers(d.data ?? []);
+        setPagination(d.meta || { total: 0, pages: 0, hasNext: false, hasPrev: false });
         setLoading(false);
       })
       .catch(() => setLoading(false));
-  }, []);
+  }, [page, limit]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => { 
+    load(); 
+  }, [load]);
 
   async function changeRole(id: number, role: string) {
     setPendingRole((p) => ({ ...p, [id]: role }));
@@ -43,9 +47,9 @@ export default function UsersPage() {
     const data = await res.json() as { error?: string };
     if (res.ok) {
       setUsers((u) => u.map((x) => (x.id === id ? { ...x, role } : x)));
-      showToast(`Role updated to ${role}`);
+      addToast(`Role updated to ${role}`, "success");
     } else {
-      showToast(data.error ?? "Failed", false);
+      addToast(data.error ?? "Failed", "error");
     }
     setPendingRole((p) => { const n = { ...p }; delete n[id]; return n; });
   }
@@ -56,9 +60,10 @@ export default function UsersPage() {
     const data = await res.json() as { error?: string };
     if (res.ok) {
       setUsers((u) => u.filter((x) => x.id !== id));
-      showToast("User deleted");
+      addToast("User deleted", "success");
+      load();
     } else {
-      showToast(data.error ?? "Failed", false);
+      addToast(data.error ?? "Failed", "error");
     }
   }
 
@@ -70,19 +75,6 @@ export default function UsersPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Toast */}
-      {toast && (
-        <div
-          className="fixed bottom-6 right-6 z-50 px-5 py-3 rounded-xl text-sm font-semibold shadow-xl"
-          style={{
-            backgroundColor: toast.ok ? "#00F0FF15" : "#FF000015",
-            border: `1px solid ${toast.ok ? "#00F0FF44" : "#FF000044"}`,
-            color: toast.ok ? "#00F0FF" : "#FF6B6B",
-          }}
-        >
-          {toast.msg}
-        </div>
-      )}
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -241,11 +233,22 @@ export default function UsersPage() {
         )}
       </div>
 
-      {/* Count */}
+      {/* Pagination */}
       {!loading && (
-        <p className="text-xs" style={{ color: "#8B949E" }}>
-          Showing {filtered.length} of {users.length} user{users.length !== 1 ? "s" : ""}
-        </p>
+        <PaginationControls
+          page={page}
+          pages={pagination.pages}
+          hasNext={pagination.hasNext}
+          hasPrev={pagination.hasPrev}
+          onPageChange={setPage}
+          itemsPerPage={limit}
+          onItemsPerPageChange={(newLimit) => {
+            setLimit(newLimit);
+            setPage(1);
+          }}
+          total={pagination.total}
+          currentCount={users.length}
+        />
       )}
     </div>
   );

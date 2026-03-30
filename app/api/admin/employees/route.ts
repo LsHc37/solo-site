@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { parsePaginationParams, getPaginationOffset, getPaginationMeta } from "@/lib/pagination";
 import { requireAdmin } from "@/lib/admin-auth";
 import db from "@/lib/db";
 import bcrypt from "bcryptjs";
@@ -9,20 +10,60 @@ import {
   generateEmployeeNumber,
 } from "@/lib/employees";
 
-// GET - Fetch all employees with their permissions
-export async function GET() {
+// GET - Fetch paginated employees with their permissions
+export async function GET(req: NextRequest) {
   const { session, error } = await requireAdmin();
   if (error) return error;
 
   try {
-    const employees = getAllEmployees();
-    const permissions = getAllPermissions();
+    const { searchParams } = new URL(req.url);
+    const params = parsePaginationParams(searchParams);
+    const { offset, limit } = getPaginationOffset(params.page, params.limit);
 
-    return NextResponse.json({ employees, permissions });
+    // Get total count
+    const countResult = db.prepare("SELECT COUNT(*) as count FROM employees").get() as { count: number };
+    const total = countResult.count;
+
+    // Get paginated employees
+    const rows = db
+      .prepare(
+        `SELECT e.*, u.email 
+         FROM employees e 
+         JOIN users u ON e.user_id = u.id 
+         ORDER BY e.last_name, e.first_name
+         LIMIT ? OFFSET ?`
+      )
+      .all(limit, offset) as any[];
+
+    // Load permissions for each employee
+    const employees = [];
+    for (const employee of rows) {
+      const permissions = db
+        .prepare(
+          `SELECT p.code 
+           FROM employee_permissions ep
+           JOIN permissions p ON ep.permission_id = p.id
+           WHERE ep.employee_id = ?`
+        )
+        .all(employee.id) as { code: string }[];
+
+      employee.permissions = permissions.map(p => p.code);
+      employees.push(employee);
+    }
+
+    const permissions = getAllPermissions();
+    const meta = getPaginationMeta(params.page, limit, total);
+
+    return NextResponse.json({
+      ok: true,
+      data: employees,
+      permissions,
+      meta,
+    });
   } catch (err) {
     console.error("GET /api/admin/employees error:", err);
     return NextResponse.json(
-      { error: "Failed to fetch employees" },
+      { ok: false, error: "Failed to fetch employees" },
       { status: 500 }
     );
   }

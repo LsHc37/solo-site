@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { getSafeCallbackUrl } from "@/lib/safe-callback-url";
+import { validateEmail, validatePassword } from "@/lib/form-validation";
 
 export default function LoginPageClient() {
   const router = useRouter();
@@ -19,6 +20,18 @@ export default function LoginPageClient() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showAdminCode, setShowAdminCode] = useState(false);
+
+  // Form validation
+  const emailError = useMemo(() => (email ? validateEmail(email) : null), [email]);
+  const passwordError = useMemo(() => (password ? validatePassword(password) : null), [password]);
+
+  const isFormValid = useMemo(() => {
+    if (!email || !password) return false;
+    if (emailError || passwordError) return false;
+    if (isAdminLogin && !adminPortalCode.trim()) return false;
+    if (!isAdminLogin && !createAccountConsent) return false;
+    return true;
+  }, [email, password, emailError, passwordError, adminPortalCode, createAccountConsent, isAdminLogin]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -157,22 +170,23 @@ export default function LoginPageClient() {
                   className="w-full rounded-xl px-4 py-3 text-sm outline-none transition-all duration-200 pr-10"
                   style={{
                     backgroundColor: "#0D1117",
-                    border: error && email ? "1px solid #FF6B6B66" : "1px solid #30363D",
+                    border: emailError ? "1px solid #EF4444" : "1px solid #30363D",
                     color: "#E6EDF3",
                   }}
                   onFocus={(e) => {
-                    if (!error || !email) e.currentTarget.style.borderColor = "#00F0FF66";
+                    if (!emailError) e.currentTarget.style.borderColor = "#00F0FF66";
                   }}
                   onBlur={(e) => {
-                    e.currentTarget.style.borderColor = error && email ? "#FF6B6B66" : "#30363D";
+                    e.currentTarget.style.borderColor = emailError ? "#EF4444" : "#30363D";
                   }}
                 />
-                {email && !error && (
+                {email && !emailError && (
                   <div className="absolute right-3 top-1/2 -translate-y-1/2 text-green-400">
                     ✓
                   </div>
                 )}
               </div>
+              {emailError && <p className="text-xs" style={{ color: "#EF4444" }}>{emailError}</p>}
             </div>
 
             {/* Password Field */}
@@ -198,14 +212,14 @@ export default function LoginPageClient() {
                   className="w-full rounded-xl px-4 py-3 text-sm outline-none transition-all duration-200 pr-10"
                   style={{
                     backgroundColor: "#0D1117",
-                    border: error && password ? "1px solid #FF6B6B66" : "1px solid #30363D",
+                    border: passwordError ? "1px solid #EF4444" : "1px solid #30363D",
                     color: "#E6EDF3",
                   }}
                   onFocus={(e) => {
-                    if (!error || !password) e.currentTarget.style.borderColor = "#00F0FF66";
+                    if (!passwordError) e.currentTarget.style.borderColor = "#00F0FF66";
                   }}
                   onBlur={(e) => {
-                    e.currentTarget.style.borderColor = error && password ? "#FF6B6B66" : "#30363D";
+                    e.currentTarget.style.borderColor = passwordError ? "#EF4444" : "#30363D";
                   }}
                 />
                 <button
@@ -217,6 +231,7 @@ export default function LoginPageClient() {
                   {showPassword ? "Hide" : "Show"}
                 </button>
               </div>
+              {passwordError && <p className="text-xs" style={{ color: "#EF4444" }}>{passwordError}</p>}
             </div>
 
             {/* Admin Portal Code Field */}
@@ -318,12 +333,12 @@ export default function LoginPageClient() {
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={loading || (isAdminLogin ? !email || !password || !adminPortalCode : !email || !password || !createAccountConsent)}
+              disabled={loading || !isFormValid}
               className="w-full rounded-xl py-3.5 font-bold text-sm tracking-wide transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed mt-2 group relative overflow-hidden"
               style={{
                 backgroundColor: "#00F0FF",
                 color: "#0D1117",
-                boxShadow: loading ? "none" : "0 0 24px rgba(0,240,255,0.4)",
+                boxShadow: loading && isFormValid ? "0 0 24px rgba(0,240,255,0.4)" : "none",
               }}
             >
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-20 group-active:opacity-30 translate-x-full group-hover:translate-x-0 transition-all" />

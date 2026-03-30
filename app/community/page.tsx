@@ -4,6 +4,7 @@ import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import PublicNav from "@/components/PublicNav";
 import PublicFooter from "@/components/PublicFooter";
+import { validateLength } from "@/lib/form-validation";
 
 type CommunityKind = "question" | "review";
 
@@ -54,6 +55,14 @@ export default function CommunityPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formMessage, setFormMessage] = useState("");
+
+  // Form validation
+  const authorNameError = useMemo(() => validateLength(authorName, 2, 60, "Name"), [authorName]);
+  const messageError = useMemo(() => validateLength(message, 8, 500, "Message"), [message]);
+
+  const isFormValid = useMemo(() => {
+    return !authorNameError && !messageError && authorName.trim().length > 0 && message.trim().length > 0;
+  }, [authorNameError, messageError, authorName, message]);
 
   const filteredPosts = useMemo(() => {
     if (activeFilter === "all") {
@@ -225,8 +234,13 @@ export default function CommunityPage() {
                 maxLength={60}
                 placeholder="Your name"
                 className="mt-1 w-full rounded-xl border px-3 py-2 text-sm outline-none"
-                style={{ backgroundColor: "#0D1117", borderColor: "#30363D" }}
+                style={{
+                  backgroundColor: "#0D1117",
+                  borderColor: authorNameError ? "#EF4444" : "#30363D",
+                  color: "#E6EDF3",
+                }}
               />
+              {authorNameError && <p className="text-xs mt-1" style={{ color: "#EF4444" }}>{authorNameError}</p>}
             </div>
 
             <div>
@@ -243,14 +257,22 @@ export default function CommunityPage() {
                 rows={6}
                 placeholder="Ask your question or leave your review"
                 className="mt-1 w-full rounded-xl border px-3 py-2 text-sm outline-none resize-y"
-                style={{ backgroundColor: "#0D1117", borderColor: "#30363D" }}
+                style={{
+                  backgroundColor: "#0D1117",
+                  borderColor: messageError ? "#EF4444" : "#30363D",
+                  color: "#E6EDF3",
+                }}
               />
+              {messageError && <p className="text-xs mt-1" style={{ color: "#EF4444" }}>{messageError}</p>}
+              <p className="text-xs mt-1" style={{ color: "#8B949E" }}>
+                {message.length}/500 characters
+              </p>
             </div>
 
             <button
               type="submit"
-              disabled={isSubmitting}
-              className="inline-flex w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-semibold disabled:opacity-60"
+              disabled={isSubmitting || !isFormValid}
+              className="inline-flex w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
               style={{ backgroundColor: "#00F0FF", color: "#0D1117" }}
             >
               {isSubmitting ? "Posting..." : "Post to Community"}

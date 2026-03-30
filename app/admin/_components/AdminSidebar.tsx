@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
+import ThemeToggle from "@/components/ThemeToggle";
 
 const NAV = [
   {
@@ -231,6 +232,8 @@ export default function AdminSidebar({ userEmail }: Props) {
             </span>
           </div>
         </div>
+
+        <ThemeToggle />
 
         <button
           onClick={() => signOut({ callbackUrl: "/login" })}

@@ -1,16 +1,37 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin-auth";
 import db from "@/lib/db";
+import { parsePaginationParams, getPaginationOffset, getPaginationMeta } from "@/lib/pagination";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   const { error } = await requireAdmin();
   if (error) return error;
 
-  const users = db
-    .prepare("SELECT id, email, role, created_at FROM users ORDER BY created_at DESC")
-    .all();
+  const { searchParams } = new URL(req.url);
+  const params = parsePaginationParams(searchParams);
+  const { offset, limit } = getPaginationOffset(params.page, params.limit);
 
-  return NextResponse.json({ users });
+  // Get total count
+  const countResult = db.prepare("SELECT COUNT(*) as count FROM users").get() as { count: number };
+  const total = countResult.count;
+
+  // Get paginated data
+  const users = db
+    .prepare(`
+      SELECT id, email, role, created_at 
+      FROM users 
+      ORDER BY created_at DESC 
+      LIMIT ? OFFSET ?
+    `)
+    .all(limit, offset);
+
+  const meta = getPaginationMeta(params.page, limit, total);
+
+  return NextResponse.json({
+    ok: true,
+    data: users,
+    meta,
+  });
 }
 
 export async function PATCH(req: NextRequest) {

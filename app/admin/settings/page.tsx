@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { useToast } from "@/lib/toast-context";
+import { SkeletonSettingsPanel } from "@/components/Skeletons";
 
 interface Settings {
   site_name: string;
@@ -58,15 +60,10 @@ function FieldRow({
 }
 
 export default function SettingsPage() {
+  const { addToast } = useToast();
   const [settings, setSettings] = useState<Settings>(DEFAULT);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
-
-  function showToast(msg: string, ok = true) {
-    setToast({ msg, ok });
-    setTimeout(() => setToast(null), 3500);
-  }
 
   const load = useCallback(() => {
     fetch("/api/admin/settings")
@@ -93,43 +90,32 @@ export default function SettingsPage() {
       body: JSON.stringify(settings),
     });
     if (res.ok) {
-      showToast("Settings saved successfully");
+      addToast("Settings saved successfully", "success");
     } else {
-      showToast("Failed to save settings", false);
+      addToast("Failed to save settings", "error");
     }
     setSaving(false);
   }
 
   const inputStyle = {
-    backgroundColor: "#0D1117",
-    borderColor: "#21262D",
-    color: "#E6EDF3",
+    backgroundColor: "var(--surface)",
+    borderColor: "var(--border)",
+    color: "var(--foreground)",
   } as React.CSSProperties;
 
   if (loading) {
     return (
       <div className="flex flex-col gap-6">
-        <h1 className="text-3xl font-black" style={{ color: "#E6EDF3" }}>Settings</h1>
-        <div className="h-64 rounded-2xl animate-pulse" style={{ backgroundColor: "#161B22" }} />
+        <div>
+          <h1 className="text-3xl font-black" style={{ color: "var(--foreground)" }}>Site Settings</h1>
+        </div>
+        <SkeletonSettingsPanel sections={4} />
       </div>
     );
   }
 
   return (
     <div className="flex flex-col gap-6">
-      {toast && (
-        <div
-          className="fixed bottom-6 right-6 z-50 px-5 py-3 rounded-xl text-sm font-semibold shadow-xl"
-          style={{
-            backgroundColor: toast.ok ? "#00F0FF15" : "#FF000015",
-            border: `1px solid ${toast.ok ? "#00F0FF44" : "#FF000044"}`,
-            color: toast.ok ? "#00F0FF" : "#FF6B6B",
-          }}
-        >
-          {toast.msg}
-        </div>
-      )}
-
       <div>
         <h1 className="text-3xl font-black" style={{ color: "#E6EDF3" }}>Site Settings</h1>
         <p className="text-sm mt-1" style={{ color: "#8B949E" }}>

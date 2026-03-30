@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import ThemeToggle from "./ThemeToggle";
 
 const NAV_LINKS = [
   { href: "/", label: "Home", exact: true },
@@ -26,8 +27,8 @@ export default function PublicNav() {
     <nav
       className="sticky top-0 z-40 backdrop-blur-md"
       style={{
-        backgroundColor: "rgba(13,17,23,0.97)",
-        borderBottom: "1px solid #21262D",
+        backgroundColor: "var(--surface)",
+        borderBottom: "1px solid var(--border)",
       }}
     >
       <div className="mx-auto max-w-6xl px-4 sm:px-6 flex items-center justify-between h-16">
@@ -36,14 +37,15 @@ export default function PublicNav() {
           <div
             className="w-8 h-8 rounded-lg flex items-center justify-center"
             style={{
-              background: "linear-gradient(135deg, #00F0FF22, #00F0FF08)",
-              border: "1px solid #00F0FF44",
+              background: "linear-gradient(135deg, var(--accent), transparent)",
+              border: "1px solid var(--accent)",
+              opacity: 0.3,
             }}
           >
             <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4">
               <path
                 d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
-                stroke="#00F0FF"
+                stroke="var(--accent)"
                 strokeWidth="1.8"
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -52,9 +54,9 @@ export default function PublicNav() {
           </div>
           <span
             className="text-sm font-black uppercase"
-            style={{ color: "#E6EDF3", letterSpacing: "0.14em" }}
+            style={{ color: "var(--foreground)", letterSpacing: "0.14em" }}
           >
-            Retro<span style={{ color: "#00F0FF" }}>Gigz</span>
+            Retro<span style={{ color: "var(--accent)" }}>Gigz</span>
           </span>
         </Link>
 
@@ -68,8 +70,8 @@ export default function PublicNav() {
                 href={link.href}
                 className="px-3 py-1.5 rounded-lg text-sm font-medium transition-colors duration-150"
                 style={{
-                  color: active ? "#E6EDF3" : "#8B949E",
-                  backgroundColor: active ? "#21262D" : "transparent",
+                  color: active ? "var(--foreground)" : "var(--muted)",
+                  backgroundColor: active ? "var(--surface)" : "transparent",
                 }}
               >
                 {link.label}
@@ -80,13 +82,15 @@ export default function PublicNav() {
 
         {/* Right side */}
         <div className="flex items-center gap-2">
+          <ThemeToggle />
           <Link
             href="/login"
             className="hidden md:flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-bold transition-all duration-150"
             style={{
-              backgroundColor: "#00F0FF14",
-              border: "1px solid #00F0FF33",
-              color: "#00F0FF",
+              backgroundColor: "var(--accent)",
+              border: "1px solid var(--accent)",
+              opacity: 0.3,
+              color: "var(--accent)",
             }}
           >
             <svg
@@ -110,7 +114,7 @@ export default function PublicNav() {
             aria-label={open ? "Close navigation" : "Open navigation"}
             onClick={() => setOpen((v) => !v)}
             className="md:hidden w-9 h-9 rounded-lg border flex items-center justify-center"
-            style={{ borderColor: "#21262D", color: "#8B949E" }}
+            style={{ borderColor: "var(--border)", color: "var(--muted)" }}
           >
             {open ? (
               <svg
@@ -143,7 +147,7 @@ export default function PublicNav() {
       {open && (
         <div
           className="md:hidden px-4 pb-4 pt-2 flex flex-col gap-1"
-          style={{ borderTop: "1px solid #21262D" }}
+          style={{ borderTop: "1px solid var(--border)" }}
         >
           {NAV_LINKS.map((link) => {
             const active = isActive(link.href, link.exact);
@@ -154,15 +158,16 @@ export default function PublicNav() {
                 onClick={() => setOpen(false)}
                 className="px-3 py-2.5 rounded-lg text-sm font-medium transition-colors"
                 style={{
-                  color: active ? "#00F0FF" : "#8B949E",
-                  backgroundColor: active ? "#00F0FF0A" : "transparent",
+                  color: active ? "var(--accent)" : "var(--muted)",
+                  backgroundColor: active ? "var(--accent)" : "transparent",
+                  opacity: active ? 0.15 : 1,
                 }}
               >
                 {link.label}
               </Link>
             );
           })}
-          <div className="mt-1 pt-2" style={{ borderTop: "1px solid #21262D" }}>
+          <div className="mt-1 pt-2" style={{ borderTop: "1px solid var(--border)" }}>
             <Link
               href="/login"
               onClick={() => setOpen(false)}

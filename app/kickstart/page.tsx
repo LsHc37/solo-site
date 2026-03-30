@@ -2,7 +2,8 @@
 
 import PublicFooter from "@/components/PublicFooter";
 import PublicNav from "@/components/PublicNav";
-import { useState } from "react";
+import PromptAnalyzer, { analyzePrompt } from "@/components/PromptAnalyzer";
+import { useEffect, useRef, useState } from "react";
 
 type FitnessGoal = "cut" | "bulk" | "maintain";
 type ActivityLevel = "sedentary" | "light" | "active" | "athlete";
@@ -53,13 +54,104 @@ const focusOptions: Array<{ value: MainFocus; label: string; description: string
 
 export default function KickstartPage() {
   const [formData, setFormData] = useState<KickstartFormData>(defaultForm);
+  const [userPrompt, setUserPrompt] = useState("");
+  const [generationState, setGenerationState] = useState<"idle" | "loading" | "success">("idle");
+  const [isOverlayVisible, setIsOverlayVisible] = useState(false);
+  const [statusIndex, setStatusIndex] = useState(0);
+  const statusIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const finishTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const promptScore = analyzePrompt(userPrompt).score;
+  const canGenerate = promptScore >= 50;
+  const isGenerating = generationState !== "idle";
+
+  const generationStatuses = [
+    "Connecting to RetroGigz Engine...",
+    `Calibrating Macros for ${formData.age || "Age"}/${formData.weightLbs || "Weight"}...`,
+    "Structuring 4-Week Periodization...",
+    "Securing .solo Payload...",
+  ];
+
+  function clearGenerationTimers() {
+    if (statusIntervalRef.current) {
+      clearInterval(statusIntervalRef.current);
+      statusIntervalRef.current = null;
+    }
+
+    if (finishTimeoutRef.current) {
+      clearTimeout(finishTimeoutRef.current);
+      finishTimeoutRef.current = null;
+    }
+
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
+    }
+  }
+
+  useEffect(() => {
+    return () => {
+      clearGenerationTimers();
+    };
+  }, []);
 
   function handleChange<K extends keyof KickstartFormData>(field: K, value: KickstartFormData[K]) {
     setFormData((prev) => ({ ...prev, [field]: value }));
   }
 
+  function triggerSoloDownload() {
+    const payload = {
+      generatedAt: new Date().toISOString(),
+      prompt: userPrompt,
+      age: Number(formData.age),
+      gender: formData.gender,
+      weightLbs: Number(formData.weightLbs),
+      height: formData.height,
+      fitnessGoal: formData.fitnessGoal,
+      activityLevel: formData.activityLevel,
+      productivityFocus: formData.mainFocus,
+      version: "1.0",
+    };
+
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    const date = new Date().toISOString().slice(0, 10);
+
+    link.href = url;
+    link.download = `retrogigz-kickstart-${date}.solo`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
+
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (!canGenerate || isGenerating) {
+      return;
+    }
+
+    clearGenerationTimers();
+    setIsOverlayVisible(true);
+    setGenerationState("loading");
+    setStatusIndex(0);
+
+    statusIntervalRef.current = setInterval(() => {
+      setStatusIndex((prev) => (prev + 1) % generationStatuses.length);
+    }, 170);
+
+    finishTimeoutRef.current = setTimeout(() => {
+      clearGenerationTimers();
+      triggerSoloDownload();
+      setGenerationState("success");
+
+      closeTimeoutRef.current = setTimeout(() => {
+        setIsOverlayVisible(false);
+        setGenerationState("idle");
+      }, 1300);
+    }, 3000);
 
     console.log("Solo Productivity Kickstart payload:", {
       age: Number(formData.age),
@@ -93,6 +185,49 @@ export default function KickstartPage() {
         </section>
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+          <section className="rounded-2xl border p-5 sm:p-6" style={{ backgroundColor: "#161B22", borderColor: "#21262D" }}>
+            <h2 className="text-lg font-bold">0. Describe Your Plan</h2>
+            <p className="mt-2 text-sm" style={{ color: "#8B949E" }}>
+              Type your fitness-plan prompt with details like demographics, goals, diet, and schedule.
+            </p>
+            <textarea
+              value={userPrompt}
+              onChange={(event) => setUserPrompt(event.target.value)}
+              placeholder="Example: I am 27, 175 lbs, want to lean out, target 2200 calories with high protein, and train at home 4 days a week."
+              rows={5}
+              className="mt-4 w-full rounded-xl border px-3 py-2 text-sm"
+              style={{ backgroundColor: "#0D1117", borderColor: "#30363D", color: "#E6EDF3" }}
+            />
+            <PromptAnalyzer text={userPrompt} />
+
+            <section className="mt-6 rounded-2xl border border-zinc-700 bg-zinc-900 p-5 sm:p-6">
+              <h3 className="text-lg font-black tracking-wide text-zinc-100">How to Inject Your Protocol</h3>
+
+              <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
+                <article className="rounded-xl border border-zinc-700 bg-zinc-800 p-4">
+                  <h4 className="text-sm font-bold uppercase tracking-wider text-zinc-100">1. Generate</h4>
+                  <p className="mt-2 text-sm leading-relaxed text-zinc-300">
+                    Fill out stats and click generate.
+                  </p>
+                </article>
+
+                <article className="rounded-xl border border-zinc-700 bg-zinc-800 p-4">
+                  <h4 className="text-sm font-bold uppercase tracking-wider text-zinc-100">2. Download</h4>
+                  <p className="mt-2 text-sm leading-relaxed text-zinc-300">
+                    Save the secure .solo file to your device.
+                  </p>
+                </article>
+
+                <article className="rounded-xl border border-zinc-700 bg-zinc-800 p-4">
+                  <h4 className="text-sm font-bold uppercase tracking-wider text-zinc-100">3. Import</h4>
+                  <p className="mt-2 text-sm leading-relaxed text-zinc-300">
+                    Open the Solo App &gt; Settings &gt; Import .solo to overwrite your Life OS.
+                  </p>
+                </article>
+              </div>
+            </section>
+          </section>
+
           <section className="rounded-2xl border p-5 sm:p-6" style={{ backgroundColor: "#161B22", borderColor: "#21262D" }}>
             <h2 className="text-lg font-bold">1. Basic Info</h2>
             <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -236,12 +371,84 @@ export default function KickstartPage() {
 
           <button
             type="submit"
+            disabled={!canGenerate || isGenerating}
             className="w-full rounded-2xl px-6 py-4 text-base font-black uppercase tracking-wide transition sm:text-lg"
-            style={{ backgroundColor: "#00F0FF", color: "#0D1117", boxShadow: "0 0 28px rgba(0,240,255,0.35)" }}
+            style={{
+              backgroundColor: isGenerating ? "#14532D" : canGenerate ? "#00F0FF" : "#30363D",
+              color: isGenerating ? "#D1FAE5" : canGenerate ? "#0D1117" : "#8B949E",
+              boxShadow: isGenerating
+                ? "0 0 34px rgba(34,197,94,0.45)"
+                : canGenerate
+                  ? "0 0 28px rgba(0,240,255,0.35)"
+                  : "none",
+              cursor: !canGenerate || isGenerating ? "not-allowed" : "pointer",
+            }}
           >
-            Generate My .solo File
+            {!canGenerate
+              ? "Prompt strength must be 50%+ to generate"
+              : generationState === "loading"
+                ? "Generating .solo Payload..."
+                : generationState === "success"
+                  ? "Success: .solo Payload Secured"
+                  : "Generate My .solo File"}
           </button>
         </form>
+
+        {isOverlayVisible ? (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
+            <div
+              className="w-full max-w-2xl overflow-hidden rounded-2xl border"
+              style={{
+                borderColor: generationState === "success" ? "#22C55E99" : "#00F0FF66",
+                boxShadow:
+                  generationState === "success"
+                    ? "0 0 48px rgba(34,197,94,0.35)"
+                    : "0 0 42px rgba(0,240,255,0.22)",
+                background:
+                  generationState === "success"
+                    ? "linear-gradient(180deg, #07140C 0%, #0B1B12 100%)"
+                    : "linear-gradient(180deg, #0B1220 0%, #0A1018 100%)",
+              }}
+            >
+              <div className="flex items-center justify-between border-b px-5 py-3 text-xs uppercase tracking-widest" style={{ borderColor: "#1F2937", color: "#9CA3AF" }}>
+                <span>RETROGIGZ_TERMINAL://KICKSTART</span>
+                <span>{generationState === "success" ? "ONLINE" : "PROCESSING"}</span>
+              </div>
+
+              <div className="relative p-5 font-mono text-sm">
+                <div className="pointer-events-none absolute inset-0 opacity-15" style={{ backgroundImage: "linear-gradient(transparent 50%, rgba(0,0,0,0.28) 50%)", backgroundSize: "100% 3px" }} />
+
+                {generationState === "loading" ? (
+                  <div className="relative space-y-4" style={{ color: "#A5F3FC" }}>
+                    <p className="text-xs uppercase tracking-widest text-cyan-300">Booting sequence...</p>
+                    <p className="text-lg leading-relaxed animate-pulse">&gt; {generationStatuses[statusIndex]}</p>
+                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                      {generationStatuses.map((status, index) => (
+                        <div
+                          key={status}
+                          className="rounded-md border px-3 py-2 text-xs transition"
+                          style={{
+                            borderColor: index === statusIndex ? "#00F0FF80" : "#334155",
+                            color: index === statusIndex ? "#67E8F9" : "#64748B",
+                            backgroundColor: index === statusIndex ? "#00F0FF14" : "#0B1220",
+                          }}
+                        >
+                          [{index + 1}] {status}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="relative space-y-4" style={{ color: "#86EFAC" }}>
+                    <p className="text-xs uppercase tracking-widest text-green-300">Payload complete</p>
+                    <p className="text-2xl font-bold">SUCCESS</p>
+                    <p className="text-sm text-green-200">.solo file encrypted, packaged, and downloaded to your device.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        ) : null}
       </main>
 
       <PublicFooter />

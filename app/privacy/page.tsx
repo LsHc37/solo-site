@@ -108,6 +108,49 @@ Subject: [privacy] Privacy Policy Inquiry`,
             </p>
           </div>
 
+          <section
+            className="rounded-2xl border p-6 sm:p-8 mb-8"
+            style={{
+              background: "linear-gradient(135deg, rgba(34,197,94,0.14) 0%, rgba(22,27,34,1) 55%)",
+              borderColor: "#22C55E88",
+              boxShadow: "0 0 0 1px rgba(34,197,94,0.2), 0 0 42px rgba(34,197,94,0.16)",
+            }}
+            aria-label="Local-First Data Guarantee"
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl" style={{ backgroundColor: "#22C55E22", color: "#22C55E" }}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true">
+                  <path d="M20 6 9 17l-5-5" />
+                </svg>
+              </div>
+              <h2 className="text-2xl font-black tracking-tight" style={{ color: "#D1FAE5" }}>
+                Local-First Data Guarantee
+              </h2>
+            </div>
+
+            <p className="text-base leading-relaxed font-semibold" style={{ color: "#E6EDF3" }}>
+              Plain English promise: All health metrics, GPS activity, and habit tracking are stored 100% locally on your device.
+            </p>
+            <p className="text-base leading-relaxed font-semibold mt-3" style={{ color: "#E6EDF3" }}>
+              RetroGigz does not harvest, sell, or transmit personal health data to external servers.
+            </p>
+
+            <ul className="mt-5 grid gap-2 text-sm sm:grid-cols-2" style={{ color: "#BDEFCF" }}>
+              <li className="rounded-lg border px-3 py-2" style={{ borderColor: "#22C55E55", backgroundColor: "#0D1117AA" }}>
+                Health metrics: local only
+              </li>
+              <li className="rounded-lg border px-3 py-2" style={{ borderColor: "#22C55E55", backgroundColor: "#0D1117AA" }}>
+                GPS activity: local only
+              </li>
+              <li className="rounded-lg border px-3 py-2" style={{ borderColor: "#22C55E55", backgroundColor: "#0D1117AA" }}>
+                Habit tracking: local only
+              </li>
+              <li className="rounded-lg border px-3 py-2" style={{ borderColor: "#22C55E55", backgroundColor: "#0D1117AA" }}>
+                No external health-data transmission
+              </li>
+            </ul>
+          </section>
+
           <div className="flex flex-col gap-8">
             {sections.map((section) => (
               <div key={section.title} className="rounded-2xl border p-6 sm:p-8" style={{ backgroundColor: "#161B22", borderColor: "#21262D" }}>
