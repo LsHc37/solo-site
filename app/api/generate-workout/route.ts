@@ -80,7 +80,7 @@ export async function POST(req: Request) {
 
     const prompt = [
       "Generate a personalized workout plan JSON that matches the required structure.",
-      `You are generating for a ${extractedAge ?? "unknown"} year old user at approximately ${extractedWeight ?? "unknown"} lbs with experience level ${extractedExperienceLevel}.`,
+      `The user is exactly ${extractedAge ?? "unknown"} years old and weighs ${extractedWeight ?? "unknown"} lbs. You MUST use these exact numbers in the final JSON. If they are a beginner, you MUST set the RPE to 6-7 and only use basic beginner movements.`,
       "Infer and output user_profile.age, user_profile.weight, user_profile.gender, and user_profile.experience_level directly from the user input.",
       "Respect beginner safeguards and dynamic macro calculations.",
       "User input:",

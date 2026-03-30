@@ -41,6 +41,40 @@ Schema compliance rules:
 - The JSON must satisfy a strict schema where user_profile.age is z.number() and user_profile.weight is z.number() with no default values.
 - Do not emit fallback values unless the user explicitly provided those exact numbers.
 
+Example JSON shape (types/placeholders only, never literal defaults):
+{
+  "user_profile": {
+    "age": "<INSERT_USER_AGE>",
+    "weight": "<INSERT_USER_WEIGHT>",
+    "gender": "<INSERT_USER_GENDER>",
+    "experience_level": "<beginner|intermediate|advanced>"
+  },
+  "macros": {
+    "calories": "<CALCULATE_DYNAMICALLY_FROM_USER_PROFILE>",
+    "protein": "<CALCULATE_DYNAMICALLY_FROM_USER_PROFILE>",
+    "carbohydrates": "<OPTIONAL_DYNAMIC>",
+    "fats": "<OPTIONAL_DYNAMIC>"
+  },
+  "program": {
+    "days_per_week": "<INTEGER>",
+    "workouts": [
+      {
+        "day": "<STRING>",
+        "focus": "<STRING>",
+        "exercises": [
+          {
+            "name": "<STRING>",
+            "sets": "<NUMBER>",
+            "reps": "<STRING>",
+            "rpe": "<CALCULATE_BASED_ON_EXPERIENCE>",
+            "notes": "<OPTIONAL_STRING>"
+          }
+        ]
+      }
+    ]
+  }
+}
+
 Output discipline:
 - Keep recommendations aligned with stated goals, equipment access, schedule, and recovery context.
 - Prefer progressive fundamentals and technique quality over intensity when user experience is unclear.
