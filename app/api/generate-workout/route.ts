@@ -1,9 +1,18 @@
 import { NextResponse } from "next/server";
 import { buildWorkoutSystemPrompt } from "@/lib/workout-system-prompt";
-import { WorkoutPlanSchema } from "@/lib/validations/workoutPlanSchema";
+import { FinalWorkoutPlanSchema, MasterWorkoutLibraryOnlySchema } from "@/lib/validations/workoutPlanSchema";
 
 interface OllamaGenerateResponse {
   response?: string;
+}
+
+type ExperienceLevel = "beginner" | "intermediate" | "advanced";
+
+function extractGender(text: string): string {
+  if (/\bmale\b/i.test(text)) return "male";
+  if (/\bfemale\b/i.test(text)) return "female";
+  if (/\bnon[-\s]?binary\b/i.test(text)) return "non-binary";
+  return "unspecified";
 }
 
 function extractAge(text: string): number | null {
@@ -29,7 +38,7 @@ function extractWeight(text: string): number | null {
   return null;
 }
 
-function extractExperienceLevel(text: string): "beginner" | "intermediate" | "advanced" | "unknown" {
+function extractExperienceLevel(text: string): ExperienceLevel {
   if (/\b(beginner|new to lifting|just starting|never been to the gym|don't really workout|do not really workout)\b/i.test(text)) {
     return "beginner";
   }
@@ -39,15 +48,11 @@ function extractExperienceLevel(text: string): "beginner" | "intermediate" | "ad
   if (/\b(intermediate|some experience|trained for|lifting for)\b/i.test(text)) {
     return "intermediate";
   }
-  return "unknown";
+  return "beginner";
 }
 
-function clampBeginnerRpe(output: unknown): unknown {
-  if (!output || typeof output !== "object") return output;
-  const root = output as { program?: { workouts?: Array<{ exercises?: Array<{ rpe?: number }> }> } };
-  if (!root.program?.workouts) return output;
-
-  for (const workout of root.program.workouts) {
+function clampBeginnerRpe(output: { master_workout_library: Array<{ exercises: Array<{ rpe: number }> }> }) {
+  for (const workout of output.master_workout_library) {
     if (!workout.exercises) continue;
     for (const exercise of workout.exercises) {
       if (typeof exercise.rpe === "number" && exercise.rpe > 7) {
@@ -56,34 +61,67 @@ function clampBeginnerRpe(output: unknown): unknown {
     }
   }
 
-  return root;
+  return output;
+}
+
+function calculateMacros(age: number, weightLbs: number, experienceLevel: ExperienceLevel) {
+  const ageFactor = age < 16 ? 13.5 : 14.5;
+  const experienceFactor = experienceLevel === "advanced" ? 16 : experienceLevel === "intermediate" ? 15 : 14;
+  const calorieMultiplier = Math.round((ageFactor + experienceFactor) / 2);
+  const calories = Math.round(weightLbs * calorieMultiplier);
+
+  const proteinPerLb = age < 16 ? 0.82 : 0.9;
+  const fatPerLb = 0.3;
+
+  const protein = Math.round(weightLbs * proteinPerLb);
+  const fats = Math.round(weightLbs * fatPerLb);
+  const caloriesFromProtein = protein * 4;
+  const caloriesFromFats = fats * 9;
+  const carbs = Math.max(0, Math.round((calories - caloriesFromProtein - caloriesFromFats) / 4));
+
+  return {
+    calories,
+    protein,
+    carbohydrates: carbs,
+    fats,
+  };
 }
 
 export async function POST(req: Request) {
   try {
-    const body = (await req.json()) as { userInput?: string };
-    const userInput = body?.userInput?.trim();
+    const body = (await req.json()) as { userInput?: string; prompt?: string };
+    const userInput = body?.prompt?.trim() || body?.userInput?.trim();
 
     if (!userInput) {
-      return NextResponse.json({ error: "Missing userInput" }, { status: 400 });
+      return NextResponse.json({ error: "Missing prompt" }, { status: 400 });
     }
 
     const extractedAge = extractAge(userInput);
     const extractedWeight = extractWeight(userInput);
     const extractedExperienceLevel = extractExperienceLevel(userInput);
 
+    if (extractedAge === null || extractedWeight === null) {
+      return NextResponse.json(
+        { error: "Could not extract age and weight from prompt. Include values like '14 years old' and '120 lbs'." },
+        { status: 422 },
+      );
+    }
+
+    const extractedGender = extractGender(userInput);
+    const macros = calculateMacros(extractedAge, extractedWeight, extractedExperienceLevel);
+
     const systemPrompt = buildWorkoutSystemPrompt({
       extractedAge,
       extractedWeight,
       extractedExperienceLevel,
+      userPrompt: userInput,
     });
 
     const prompt = [
-      "Generate a personalized workout plan JSON that matches the required structure.",
-      `The user is exactly ${extractedAge ?? "unknown"} years old and weighs ${extractedWeight ?? "unknown"} lbs. You MUST use these exact numbers in the final JSON. If they are a beginner, you MUST set the RPE to 6-7 and only use basic beginner movements.`,
-      "Infer and output user_profile.age, user_profile.weight, user_profile.gender, and user_profile.experience_level directly from the user input.",
-      "Respect beginner safeguards and dynamic macro calculations.",
-      "User input:",
+      `You are generating a workout for a ${extractedAge} year old who weighs ${extractedWeight} lbs. Their experience level is: ${userInput}. Because they are young/beginner, you MUST limit RPE to 6-7 and use foundational exercises.`,
+      "Return only a JSON object containing master_workout_library.",
+      "Do not include meta, user_profile, or macros.",
+      "Original user input:",
       userInput,
     ].join("\n\n");
 
@@ -121,42 +159,45 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "AI returned invalid JSON" }, { status: 502 });
     }
 
-    const validated = WorkoutPlanSchema.safeParse(parsed);
-    if (!validated.success) {
+    const aiPayload = Array.isArray(parsed) ? { master_workout_library: parsed } : parsed;
+
+    const validatedLibrary = MasterWorkoutLibraryOnlySchema.safeParse(aiPayload);
+    if (!validatedLibrary.success) {
       return NextResponse.json(
         {
-          error: "AI JSON failed schema validation",
-          issues: validated.error.issues,
+          error: "AI workout library failed schema validation",
+          issues: validatedLibrary.error.issues,
         },
         { status: 422 },
       );
     }
 
-    const forcedUserProfile = {
-      ...validated.data.user_profile,
-      age: extractedAge ?? validated.data.user_profile.age,
-      weight: extractedWeight ?? validated.data.user_profile.weight,
-      experience_level:
-        extractedExperienceLevel === "unknown"
-          ? validated.data.user_profile.experience_level
-          : extractedExperienceLevel,
+    const normalizedLibrary =
+      extractedExperienceLevel === "beginner"
+        ? clampBeginnerRpe(validatedLibrary.data)
+        : validatedLibrary.data;
+
+    const finalPayload = {
+      meta: {
+        generated_at: new Date().toISOString(),
+        model: "qwen2.5-coder",
+        source_prompt: userInput,
+      },
+      user_profile: {
+        age: extractedAge,
+        weight: extractedWeight,
+        gender: extractedGender,
+        experience_level: extractedExperienceLevel,
+      },
+      macros,
+      master_workout_library: normalizedLibrary.master_workout_library,
     };
 
-    const merged = {
-      ...validated.data,
-      user_profile: forcedUserProfile,
-    };
-
-    const normalized =
-      merged.user_profile.experience_level === "beginner"
-        ? (clampBeginnerRpe(merged) as typeof merged)
-        : merged;
-
-    const revalidated = WorkoutPlanSchema.safeParse(normalized);
+    const revalidated = FinalWorkoutPlanSchema.safeParse(finalPayload);
     if (!revalidated.success) {
       return NextResponse.json(
         {
-          error: "Normalized workout JSON failed schema validation",
+          error: "Final workout JSON failed schema validation",
           issues: revalidated.error.issues,
         },
         { status: 422 },

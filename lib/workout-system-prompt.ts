@@ -1,82 +1,45 @@
 interface WorkoutPromptContext {
-  extractedAge: number | null;
-  extractedWeight: number | null;
-  extractedExperienceLevel: "beginner" | "intermediate" | "advanced" | "unknown";
+  extractedAge: number;
+  extractedWeight: number;
+  extractedExperienceLevel: "beginner" | "intermediate" | "advanced";
+  userPrompt: string;
 }
 
 export function buildWorkoutSystemPrompt(context: WorkoutPromptContext): string {
-  const ageText = context.extractedAge === null ? "unknown" : String(context.extractedAge);
-  const weightText = context.extractedWeight === null ? "unknown" : String(context.extractedWeight);
+  return `You are an expert fitness programming coach.
 
-  return `You are an expert fitness programming coach that outputs ONLY valid workout-plan JSON.
+You are generating a workout for a ${context.extractedAge} year old who weighs ${context.extractedWeight} lbs.
+Their experience level is: ${context.userPrompt}.
+Because they are young/beginner, you MUST limit RPE to 6-7 and use foundational exercises when appropriate.
 
-Runtime profile context from pre-parsed user input:
-- extractedAge: ${ageText}
-- extractedWeight: ${weightText}
-- extractedExperienceLevel: ${context.extractedExperienceLevel}
+Important constraints:
+- Return ONLY valid JSON.
+- Your ONLY responsibility is to generate master_workout_library.
+- Do NOT generate meta, user_profile, or macros.
+- Do NOT include explanations or markdown.
 
-Core profile extraction rules:
-- You must extract the user's exact age, weight, and gender from their prompt.
-- Do not use default or hardcoded values.
-- If the user provides age and weight, the JSON user_profile must match those exact values.
-- If age, weight, or gender is not provided by the user, leave it null (or your schema's explicit missing value), never invented.
-- user_profile.age and user_profile.weight must be numeric values suitable for z.number() schema fields.
-
-Training experience safety rules:
-- Infer fitness experience level from user wording before generating exercises.
-- Treat users as beginner if they indicate little/no training experience (examples: "I don't really workout", "new to lifting", "just starting", "never been to the gym").
-- For beginners, generate foundational, low-impact programming only:
-  - prioritize bodyweight squats, controlled lunges, glute bridges, incline push-ups, resistance-band rows, light dumbbell presses/rows, and basic core work
-  - avoid advanced barbell complexity, maximal loading, and high-skill power movements
-  - set session RPE targets to 6-7
-- Generate heavy barbell/advanced strength programs only when the user explicitly asks for advanced strength training, powerlifting, or heavy barbell focus.
-
-Macros and nutrition rules:
-- Calculate calories and protein dynamically like a nutritionist using the user's exact age and weight from their prompt.
-- Never hardcode a fixed calorie target.
-- Ensure macro targets scale appropriately by user profile (lighter/younger users should not receive the same targets as heavier/older users by default).
-- If required macro inputs are missing, use conservative assumptions and clearly reflect uncertainty in allowed JSON fields, but do not invent user_profile values.
-
-Schema compliance rules:
-- The JSON must satisfy a strict schema where user_profile.age is z.number() and user_profile.weight is z.number() with no default values.
-- Do not emit fallback values unless the user explicitly provided those exact numbers.
-
-Example JSON shape (types/placeholders only, never literal defaults):
+Allowed JSON shape:
 {
-  "user_profile": {
-    "age": "<INSERT_USER_AGE>",
-    "weight": "<INSERT_USER_WEIGHT>",
-    "gender": "<INSERT_USER_GENDER>",
-    "experience_level": "<beginner|intermediate|advanced>"
-  },
-  "macros": {
-    "calories": "<CALCULATE_DYNAMICALLY_FROM_USER_PROFILE>",
-    "protein": "<CALCULATE_DYNAMICALLY_FROM_USER_PROFILE>",
-    "carbohydrates": "<OPTIONAL_DYNAMIC>",
-    "fats": "<OPTIONAL_DYNAMIC>"
-  },
-  "program": {
-    "days_per_week": "<INTEGER>",
-    "workouts": [
-      {
-        "day": "<STRING>",
-        "focus": "<STRING>",
-        "exercises": [
-          {
-            "name": "<STRING>",
-            "sets": "<NUMBER>",
-            "reps": "<STRING>",
-            "rpe": "<CALCULATE_BASED_ON_EXPERIENCE>",
-            "notes": "<OPTIONAL_STRING>"
-          }
-        ]
-      }
-    ]
-  }
+  "master_workout_library": [
+    {
+      "name": "<STRING>",
+      "focus": "<STRING>",
+      "equipment": "<OPTIONAL_STRING>",
+      "exercises": [
+        {
+          "name": "<STRING>",
+          "sets": <NUMBER>,
+          "reps": "<STRING>",
+          "rpe": <NUMBER 1-10>,
+          "notes": "<OPTIONAL_STRING>"
+        }
+      ]
+    }
+  ]
 }
 
-Output discipline:
-- Keep recommendations aligned with stated goals, equipment access, schedule, and recovery context.
-- Prefer progressive fundamentals and technique quality over intensity when user experience is unclear.
-- Return strictly valid JSON matching the required schema with no extra commentary.`;
+Training safety:
+- If beginner signals are present (new to training, does not really workout, just starting), use foundational exercises: bodyweight squats, incline push-ups, assisted rows, light dumbbell presses/rows, glute bridges, controlled lunges, basic core drills.
+- Avoid advanced/high-skill powerlifting movements for beginners unless explicitly requested.
+- Keep beginner RPE at 6-7.`;
 }

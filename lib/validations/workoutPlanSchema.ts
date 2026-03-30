@@ -8,13 +8,23 @@ const WorkoutExerciseSchema = z.object({
   notes: z.string().optional(),
 });
 
-const WorkoutDaySchema = z.object({
-  day: z.string(),
+const MasterWorkoutLibraryItemSchema = z.object({
+  name: z.string(),
   focus: z.string(),
+  equipment: z.string().optional(),
   exercises: z.array(WorkoutExerciseSchema).min(1),
 });
 
-export const WorkoutPlanSchema = z.object({
+export const MasterWorkoutLibraryOnlySchema = z.object({
+  master_workout_library: z.array(MasterWorkoutLibraryItemSchema).min(1),
+});
+
+export const FinalWorkoutPlanSchema = z.object({
+  meta: z.object({
+    generated_at: z.string(),
+    model: z.string(),
+    source_prompt: z.string(),
+  }),
   user_profile: z.object({
     age: z.number(),
     weight: z.number(),
@@ -24,13 +34,11 @@ export const WorkoutPlanSchema = z.object({
   macros: z.object({
     calories: z.number(),
     protein: z.number(),
-    carbohydrates: z.number().optional(),
-    fats: z.number().optional(),
+    carbohydrates: z.number(),
+    fats: z.number(),
   }),
-  program: z.object({
-    days_per_week: z.number(),
-    workouts: z.array(WorkoutDaySchema).min(1),
-  }),
+  master_workout_library: z.array(MasterWorkoutLibraryItemSchema).min(1),
 });
 
-export type WorkoutPlan = z.infer<typeof WorkoutPlanSchema>;
+export type MasterWorkoutLibraryOnly = z.infer<typeof MasterWorkoutLibraryOnlySchema>;
+export type FinalWorkoutPlan = z.infer<typeof FinalWorkoutPlanSchema>;
