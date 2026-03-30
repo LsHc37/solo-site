@@ -8,34 +8,29 @@ interface OllamaGenerateResponse {
 
 type ExperienceLevel = "beginner" | "intermediate" | "advanced";
 
+function extractPromptDemographics(prompt: string): { age: number | null; weightLbs: number | null } {
+  const ageMatch =
+    prompt.match(/\bi\s*am\s*(\d{1,2})\b/i) ||
+    prompt.match(/\b(\d{1,2})\s*(?:years?\s*old|yo|y\/o)\b/i);
+
+  const lbsMatch = prompt.match(/\b(\d{2,3})\s*(?:lbs?|pounds?)\b/i);
+  const kgMatch = prompt.match(/\b(\d{2,3})\s*(?:kg|kgs|kilograms?)\b/i);
+
+  const age = ageMatch ? Number(ageMatch[1]) : null;
+  const weightLbs = lbsMatch
+    ? Number(lbsMatch[1])
+    : kgMatch
+      ? Math.round(Number(kgMatch[1]) * 2.20462)
+      : null;
+
+  return { age, weightLbs };
+}
+
 function extractGender(text: string): string {
   if (/\bmale\b/i.test(text)) return "male";
   if (/\bfemale\b/i.test(text)) return "female";
   if (/\bnon[-\s]?binary\b/i.test(text)) return "non-binary";
   return "unspecified";
-}
-
-function extractAge(text: string): number | null {
-  const explicitAge = text.match(/\b(\d{1,2})\s*(?:years?\s*old|yo|y\/o)\b/i);
-  if (explicitAge) return Number(explicitAge[1]);
-
-  const iAmAge = text.match(/\bi\s*am\s*(\d{1,2})\b/i);
-  if (iAmAge) return Number(iAmAge[1]);
-
-  return null;
-}
-
-function extractWeight(text: string): number | null {
-  const lbs = text.match(/\b(\d{2,3})\s*(?:lbs?|pounds?)\b/i);
-  if (lbs) return Number(lbs[1]);
-
-  const kg = text.match(/\b(\d{2,3})\s*(?:kg|kgs|kilograms?)\b/i);
-  if (kg) {
-    const kgValue = Number(kg[1]);
-    return Math.round(kgValue * 2.20462);
-  }
-
-  return null;
 }
 
 function extractExperienceLevel(text: string): ExperienceLevel {
@@ -96,13 +91,19 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing prompt" }, { status: 400 });
     }
 
-    const extractedAge = extractAge(userInput);
-    const extractedWeight = extractWeight(userInput);
+    const { age: extractedAge, weightLbs: extractedWeight } = extractPromptDemographics(userInput);
     const extractedExperienceLevel = extractExperienceLevel(userInput);
 
-    if (extractedAge === null || extractedWeight === null) {
+    if (extractedWeight === null) {
       return NextResponse.json(
-        { error: "Could not extract age and weight from prompt. Include values like '14 years old' and '120 lbs'." },
+        { error: "Could not extract weight from prompt. Include values like '120 lbs'." },
+        { status: 422 },
+      );
+    }
+
+    if (extractedAge === null) {
+      return NextResponse.json(
+        { error: "Could not extract age from prompt. Include values like '14 years old'." },
         { status: 422 },
       );
     }
