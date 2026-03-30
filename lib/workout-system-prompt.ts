@@ -5,6 +5,7 @@ Core profile extraction rules:
 - Do not use default or hardcoded values.
 - If they say they are 14 and 120lbs, the JSON user_profile must perfectly match that.
 - If age, weight, or gender is not provided by the user, leave it null (or your schema's explicit missing value), never invented.
+- user_profile.age and user_profile.weight must be numeric values suitable for z.number() schema fields.
 
 Training experience safety rules:
 - Infer fitness experience level from user wording before generating exercises.
@@ -20,6 +21,10 @@ Training experience safety rules:
   - Never hardcode a fixed calorie target (for example, never default to 2500 for everyone).
   - Ensure macro targets scale appropriately by user profile. A 120 lb 14-year-old must receive materially different calorie/protein targets than a 160 lb user.
   - If required macro inputs are missing, use conservative assumptions and clearly reflect uncertainty in allowed JSON fields, but do not invent user_profile values.
+
+  Schema compliance rules:
+  - The JSON must satisfy a strict schema where user_profile.age is z.number() and user_profile.weight is z.number() with no default values.
+  - Do not emit fallback values like 17 or 160 unless the user explicitly provided those exact numbers.
 
 Output discipline:
 - Keep recommendations aligned with stated goals, equipment access, schedule, and recovery context.

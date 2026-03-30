@@ -242,7 +242,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           role: existing.role ?? "user",
           adminPortalAccess: isAdmin && wantsAdminPortal,
           mustChangePassword: existing.must_change_password === 1,
-          totpEnabled: existing.totp_enabled === 1,
+          totpEnabled: (existing as any).totp_enabled === 1,
         };
       },
     }),
