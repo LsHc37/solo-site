@@ -13,7 +13,22 @@ export default function KickstartPage() {
     if (!prompt) return;
 
     setLoading(true);
-    setMessage("AI is building your workout JSON...");
+
+    const loadingSteps = [
+      "Analyzing demographics...",
+      "Calculating custom macros...",
+      "Designing master workout library...",
+      "Validating RPE constraints...",
+      "Packaging .solo file...",
+    ];
+
+    let stepIndex = 0;
+    setMessage(loadingSteps[stepIndex]);
+
+    let loadingInterval: ReturnType<typeof setInterval> | null = setInterval(() => {
+      stepIndex = (stepIndex + 1) % loadingSteps.length;
+      setMessage(loadingSteps[stepIndex]);
+    }, 1500);
 
     try {
       const res = await fetch("/api/generate-workout", {
@@ -29,17 +44,30 @@ export default function KickstartPage() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = "workout-plan.json";
+      a.download = "my-plan.solo";
       document.body.appendChild(a);
       a.click();
       a.remove();
       URL.revokeObjectURL(url);
 
-      setMessage("Success! workout-plan.json downloaded.");
+      if (loadingInterval) {
+        clearInterval(loadingInterval);
+        loadingInterval = null;
+      }
+
+      setMessage("Success! my-plan.solo downloaded.");
     } catch (error) {
+      if (loadingInterval) {
+        clearInterval(loadingInterval);
+        loadingInterval = null;
+      }
+
       console.error(error);
       setMessage("Error generating file. Please try again.");
     } finally {
+      if (loadingInterval) {
+        clearInterval(loadingInterval);
+      }
       setLoading(false);
     }
   };
