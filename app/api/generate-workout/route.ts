@@ -158,6 +158,7 @@ export async function POST(req: Request) {
       userInput,
     ].join("\n\n");
 
+    console.log("🚀🚀🚀 RUNNING NEW CODE! KEY STATUS:", process.env.OPENAI_API_KEY ? "KEY FOUND" : "MISSING KEY");
     const aiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
