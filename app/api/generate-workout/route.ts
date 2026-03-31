@@ -158,28 +158,40 @@ export async function POST(req: Request) {
       userInput,
     ].join("\n\n");
 
-    const aiResponse = await fetch("http://localhost:11434/api/generate", {
+    const aiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: "qwen2.5-coder",
-        system: systemPrompt,
-        prompt,
-        stream: false,
+        model: "gpt-4o-mini", // Lightning fast model!
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: prompt }
+        ],
+        temperature: 0.7,
       }),
     });
 
     if (!aiResponse.ok) {
+      const errText = await aiResponse.text();
+      console.error("OPENAI ERROR:", errText);
       return NextResponse.json(
-        { error: `AI request failed with status ${aiResponse.status}` },
+        { error: `OpenAI request failed with status ${aiResponse.status}` },
         { status: 502 },
       );
     }
 
-    const raw = (await aiResponse.json()) as OllamaGenerateResponse;
-    const content = raw.response?.trim();
+    const raw = await aiResponse.json();
+    let content = raw.choices?.[0]?.message?.content?.trim();
+
+    // ChatGPT sometimes adds markdown block formatting. This safely strips it out so JSON.parse doesn't crash.
+    if (content?.startsWith("```json")) {
+      content = content.replace(/^```json/, "").replace(/```$/, "").trim();
+    } else if (content?.startsWith("```")) {
+      content = content.replace(/^```/, "").replace(/```$/, "").trim();
+    }
 
     if (!content) {
       return NextResponse.json({ error: "AI returned empty content" }, { status: 502 });
