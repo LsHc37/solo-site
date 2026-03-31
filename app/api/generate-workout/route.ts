@@ -8,22 +8,58 @@ interface OllamaGenerateResponse {
 
 type ExperienceLevel = "beginner" | "intermediate" | "advanced";
 
-function extractPromptDemographics(prompt: string): { age: number | null; weightLbs: number | null } {
+function extractPromptDemographics(prompt: string): { age: number; weightLbs: number; extractedNumbers: number[] } {
+  const extractedNumbers = (prompt.match(/\d+(?:\.\d+)?/g) ?? [])
+    .map((value) => Number(value))
+    .filter((value) => Number.isFinite(value));
+
   const ageMatch =
     prompt.match(/\bi\s*am\s*(\d{1,2})\b/i) ||
     prompt.match(/\b(\d{1,2})\s*(?:years?\s*old|yo|y\/o)\b/i);
 
-  const lbsMatch = prompt.match(/\b(\d{2,3})\s*(?:lbs?|pounds?)\b/i);
-  const kgMatch = prompt.match(/\b(\d{2,3})\s*(?:kg|kgs|kilograms?)\b/i);
+  const lbsMatch = prompt.match(/\b(\d{2,3}(?:\.\d+)?)\s*(?:lbs?|pounds?)\b/i);
+  const kgMatch = prompt.match(/\b(\d{2,3}(?:\.\d+)?)\s*(?:kg|kgs|kilograms?)\b/i);
 
-  const age = ageMatch ? Number(ageMatch[1]) : null;
-  const weightLbs = lbsMatch
-    ? Number(lbsMatch[1])
+  let age = ageMatch ? Math.round(Number(ageMatch[1])) : null;
+  let weightLbs = lbsMatch
+    ? Math.round(Number(lbsMatch[1]))
     : kgMatch
       ? Math.round(Number(kgMatch[1]) * 2.20462)
       : null;
 
-  return { age, weightLbs };
+  const numbersUnder100 = extractedNumbers.filter((value) => value > 0 && value < 100);
+  const numbersOver90 = extractedNumbers.filter((value) => value > 90 && value < 1000);
+
+  // Heuristic fallback: smaller number under 100 is likely age.
+  if (age === null && numbersUnder100.length > 0) {
+    age = Math.round(Math.min(...numbersUnder100));
+  }
+
+  // Heuristic fallback: larger number over 90 is likely weight in lbs.
+  if (weightLbs === null && numbersOver90.length > 0) {
+    weightLbs = Math.round(Math.max(...numbersOver90));
+  }
+
+  // Single-number fallback: use the only number as age or weight based on range.
+  if (extractedNumbers.length === 1) {
+    const onlyNumber = extractedNumbers[0];
+    if (age === null && onlyNumber > 0 && onlyNumber < 100) {
+      age = Math.round(onlyNumber);
+    }
+    if (weightLbs === null && onlyNumber > 90 && onlyNumber < 1000) {
+      weightLbs = Math.round(onlyNumber);
+    }
+  }
+
+  // Hard safety defaults so extraction never crashes downstream calculations.
+  if (age === null || age <= 0 || age >= 100) {
+    age = 25;
+  }
+  if (weightLbs === null || weightLbs <= 0 || weightLbs >= 1000) {
+    weightLbs = 150;
+  }
+
+  return { age, weightLbs, extractedNumbers };
 }
 
 function extractGender(text: string): string {
@@ -91,22 +127,18 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing prompt" }, { status: 400 });
     }
 
-    const { age: extractedAge, weightLbs: extractedWeight } = extractPromptDemographics(userInput);
+    const {
+      age: extractedAge,
+      weightLbs: extractedWeight,
+      extractedNumbers,
+    } = extractPromptDemographics(userInput);
     const extractedExperienceLevel = extractExperienceLevel(userInput);
-
-    if (extractedWeight === null) {
-      return NextResponse.json(
-        { error: "Could not extract weight from prompt. Include values like '120 lbs'." },
-        { status: 422 },
-      );
-    }
-
-    if (extractedAge === null) {
-      return NextResponse.json(
-        { error: "Could not extract age from prompt. Include values like '14 years old'." },
-        { status: 422 },
-      );
-    }
+    console.log("EXTRACTED DATA:", {
+      age: extractedAge,
+      weight: extractedWeight,
+      numbers: extractedNumbers,
+      input: userInput,
+    });
 
     const extractedGender = extractGender(userInput);
     const macros = calculateMacros(extractedAge, extractedWeight, extractedExperienceLevel);
