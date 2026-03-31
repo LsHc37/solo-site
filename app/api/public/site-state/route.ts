@@ -18,7 +18,7 @@ export async function GET() {
   try {
     const rows = db
       .prepare(
-        "SELECT key, value FROM site_settings WHERE key IN ('maintenance_mode', 'announcement_active', 'announcement_text', 'announcement_color', 'site_name', 'tagline', 'primary_color', 'bg_color', 'surface_color', 'text_color', 'muted_color', 'contact_email', 'nav_account_label', 'page_layout_home', 'page_layout_solo')",
+        "SELECT key, value FROM site_settings WHERE key IN ('maintenance_mode', 'announcement_active', 'announcement_text', 'announcement_color', 'site_name', 'tagline', 'primary_color', 'bg_color', 'surface_color', 'text_color', 'muted_color', 'contact_email', 'nav_account_label', 'solo_android_play_store_url', 'page_layout_home', 'page_layout_solo')",
       )
       .all() as Row[];
 
@@ -44,6 +44,7 @@ export async function GET() {
       mutedColor: settings.muted_color ?? "#8B949E",
       contactEmail: settings.contact_email ?? "",
       navAccountLabel: settings.nav_account_label ?? "Account",
+      soloAndroidPlayStoreUrl: settings.solo_android_play_store_url ?? "https://play.google.com/store",
       pageLayouts,
       contentBlocks,
     });
@@ -62,6 +63,7 @@ export async function GET() {
       mutedColor: "#8B949E",
       contactEmail: "",
       navAccountLabel: "Account",
+      soloAndroidPlayStoreUrl: "https://play.google.com/store",
       pageLayouts: parsePageLayouts({}),
       contentBlocks: {},
     });

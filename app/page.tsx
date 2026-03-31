@@ -26,7 +26,7 @@ function HomeHero() {
           style={{ borderColor: "#00F0FF33", color: "#00F0FF", backgroundColor: "#00F0FF0A" }}
         >
           <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-current" />
-          Digital Independence
+          Solo Productivity
         </div>
 
         <h1
@@ -47,8 +47,8 @@ function HomeHero() {
         </h1>
 
         <p className="mt-6 max-w-2xl text-lg leading-relaxed sm:text-xl" style={{ color: "#8B949E" }}>
-          Privacy-first apps, independent games, and tactical apparel. We build tools that
-          work for you — not corporations.
+          Privacy-first productivity software built for focused solo execution. Plan better,
+          train smarter, and keep your data under your control.
         </p>
 
         <div className="mt-9 flex flex-wrap gap-3">
@@ -61,14 +61,7 @@ function HomeHero() {
               boxShadow: "0 0 24px rgba(0,240,255,0.35)",
             }}
           >
-            Explore Solo App
-          </Link>
-          <Link
-            href="/games"
-            className="rounded-xl border px-6 py-3 text-sm font-bold transition-all duration-200"
-            style={{ borderColor: "#30363D", color: "#E6EDF3" }}
-          >
-            View Games
+            Explore Solo Productivity
           </Link>
           <Link
             href="/community"
@@ -100,23 +93,6 @@ function DivisionsSection() {
       ),
     },
     {
-      href: "/games",
-      accent: "#A78BFA",
-      tag: "Games",
-      title: "Vanguard: Tactical Shooter",
-      body: "Our flagship indie game — built for depth, replayability, and performance-first gameplay. In active development.",
-      cta: "See progress →",
-      icon: (
-        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-          <line x1="6" y1="12" x2="10" y2="12" />
-          <line x1="8" y1="10" x2="8" y2="14" />
-          <circle cx="15.5" cy="11.5" r=".5" fill="#A78BFA" />
-          <circle cx="17.5" cy="13.5" r=".5" fill="#A78BFA" />
-          <rect x="2" y="6" width="20" height="12" rx="2" />
-        </svg>
-      ),
-    },
-    {
       href: "/community",
       accent: "#34D399",
       tag: "Community",
@@ -137,9 +113,9 @@ function DivisionsSection() {
     <section className="px-6 py-16">
       <div className="mx-auto max-w-5xl">
         <h2 className="mb-8 text-3xl font-black tracking-tight" style={{ color: "#E6EDF3" }}>
-          What We Build
+          Solo Productivity Platform
         </h2>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {cards.map((card) => (
             <Link
               key={card.href}

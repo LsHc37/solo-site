@@ -249,6 +249,7 @@ export default function AdminDashboard() {
             { href: "/admin/settings", label: "Site Settings", desc: "Colors, metadata" },
             { href: "/admin/files", label: "Upload Files", desc: "Manage public assets" },
             { href: "/admin/users", label: "Manage Users", desc: "Roles & accounts" },
+            { href: "/admin/waitlist", label: "Waitlist", desc: "iOS signup responses" },
             { href: "/admin/editor", label: "Page Editor", desc: "Visual Puck editor" },
             { href: "/admin/visual-builder", label: "Visual Builder", desc: "Layout builder" },
             { href: "/", label: "View Site", desc: "Open the live site", external: true },

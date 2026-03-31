@@ -15,6 +15,7 @@ interface SiteState {
   primaryColor: string;
   bgColor: string;
   contactEmail: string;
+  soloAndroidPlayStoreUrl: string;
   contentBlocks: Record<string, string>;
 }
 
@@ -29,6 +30,7 @@ export default function SoloPage() {
     primaryColor: "#00F0FF",
     bgColor: "#0D1117",
     contactEmail: "",
+    soloAndroidPlayStoreUrl: "https://play.google.com/store",
     contentBlocks: {},
   });
   const [siteStateLoaded, setSiteStateLoaded] = useState(false);
@@ -47,6 +49,7 @@ export default function SoloPage() {
           primaryColor: data.primaryColor ?? "#00F0FF",
           bgColor: data.bgColor ?? "#0D1117",
           contactEmail: data.contactEmail ?? "",
+          soloAndroidPlayStoreUrl: data.soloAndroidPlayStoreUrl ?? "https://play.google.com/store",
           contentBlocks: data.contentBlocks ?? {},
         });
       })
@@ -129,7 +132,7 @@ export default function SoloPage() {
           {/* CTA Buttons */}
           <div className="flex flex-wrap gap-4 mt-2">
             <Link
-              href="/contact?topic=ios-beta"
+              href="/solo/waitlist"
               className="flex items-center gap-3 px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-200 border"
               style={{
                 backgroundColor: "#00F0FF",
@@ -145,7 +148,9 @@ export default function SoloPage() {
             </Link>
 
             <Link
-              href="/contact?topic=android-beta"
+              href={siteState.soloAndroidPlayStoreUrl || "https://play.google.com/store"}
+              target="_blank"
+              rel="noopener noreferrer"
               className="flex items-center gap-3 px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-200 border"
               style={{
                 backgroundColor: "transparent",
@@ -157,7 +162,7 @@ export default function SoloPage() {
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
                 <path d="M3.18 23.76c.3.17.64.22.97.14l12.54-7.24-2.79-2.79-10.72 9.89zM.87 1.46C.34 1.96 0 2.75 0 3.8v16.4c0 1.05.34 1.84.87 2.34l.12.11 9.19-9.19v-.22L1 1.35l-.13.11zM20.93 10.27l-2.63-1.52-3.12 3.12 3.12 3.12 2.65-1.53c.76-.44.76-1.75-.02-2.19zM3.18.24l10.72 9.89-2.79 2.79L1.15.68C1.46.36 1.88.07 3.18.24z" />
               </svg>
-              Join Android Waitlist
+              Download on Android
             </Link>
           </div>
         </div>

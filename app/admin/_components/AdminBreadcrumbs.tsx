@@ -21,6 +21,7 @@ const BREADCRUMB_LABELS: Record<string, string> = {
   staff: "Staff",
   timesheets: "Timesheets",
   users: "Users",
+  waitlist: "Waitlist",
   "visual-builder": "Visual Builder",
   add: "Add",
 };

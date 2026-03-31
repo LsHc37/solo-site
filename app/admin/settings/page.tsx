@@ -19,6 +19,8 @@ interface Settings {
   announcement_color: string;
   meta_description: string;
   contact_email: string;
+  solo_android_play_store_url: string;
+  solo_waitlist_google_form_url: string;
   [key: string]: string;
 }
 
@@ -37,6 +39,8 @@ const DEFAULT: Settings = {
   announcement_color: "#00F0FF",
   meta_description: "",
   contact_email: "",
+  solo_android_play_store_url: "https://play.google.com/store",
+  solo_waitlist_google_form_url: "",
 };
 
 function FieldRow({
@@ -166,6 +170,26 @@ export default function SettingsPage() {
                 className="w-full px-3 py-2.5 rounded-lg border text-sm outline-none"
                 style={inputStyle}
                 placeholder="hello@example.com"
+              />
+            </FieldRow>
+            <FieldRow label="Android Play Store URL" description="Public Android CTA destination for the Solo page.">
+              <input
+                type="url"
+                value={settings.solo_android_play_store_url}
+                onChange={(e) => set("solo_android_play_store_url", e.target.value)}
+                className="w-full px-3 py-2.5 rounded-lg border text-sm outline-none"
+                style={inputStyle}
+                placeholder="https://play.google.com/store/apps/details?id=..."
+              />
+            </FieldRow>
+            <FieldRow label="Waitlist Google Form URL" description="Optional. Supports placeholders: {name}, {email}, {phone}, {platform}.">
+              <input
+                type="url"
+                value={settings.solo_waitlist_google_form_url}
+                onChange={(e) => set("solo_waitlist_google_form_url", e.target.value)}
+                className="w-full px-3 py-2.5 rounded-lg border text-sm outline-none"
+                style={inputStyle}
+                placeholder="https://docs.google.com/forms/.../viewform?usp=pp_url&entry.111={name}&entry.222={email}"
               />
             </FieldRow>
           </div>

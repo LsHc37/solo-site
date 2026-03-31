@@ -14,22 +14,22 @@ export default function GamesPage() {
         >
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border text-xs font-semibold"
             style={{ borderColor: "#00F0FF44", color: "#00F0FF", backgroundColor: "#00F0FF12" }}>
-            Retro Gigz Games
+            Solo Productivity
           </div>
           <h1 className="text-4xl sm:text-5xl font-black mt-5 tracking-tight">
-            Vanguard Is In Development
+            This Site Is Focused on Solo Productivity
           </h1>
           <p className="text-base sm:text-lg mt-4 leading-relaxed" style={{ color: "#8B949E" }}>
-            Our flagship tactical shooter is actively in production. We are focused on depth,
-            replayability, and performance-first gameplay.
+            Games content has been removed from public navigation. Explore Solo to access
+            the privacy-first productivity experience.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
-              href="/contact?topic=games-news"
+              href="/solo"
               className="px-5 py-3 rounded-xl text-sm font-semibold"
               style={{ backgroundColor: "#00F0FF", color: "#0D1117" }}
             >
-              Get Development Updates
+              Go to Solo
             </Link>
             <Link
               href="/"

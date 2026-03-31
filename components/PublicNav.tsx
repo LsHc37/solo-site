@@ -7,7 +7,6 @@ import ThemeToggle from "./ThemeToggle";
 
 const NAV_LINKS = [
   { href: "/", label: "Home", exact: true },
-  { href: "/games", label: "Games" },
   { href: "/solo", label: "Solo" },
   { href: "/kickstart", label: "Get Custom Plan" },
   { href: "/community", label: "Community" },
@@ -56,7 +55,7 @@ export default function PublicNav() {
             className="text-sm font-black uppercase"
             style={{ color: "var(--foreground)", letterSpacing: "0.14em" }}
           >
-            Retro<span style={{ color: "var(--accent)" }}>Gigz</span>
+            Solo <span style={{ color: "var(--accent)" }}>Productivity</span>
           </span>
         </Link>
 

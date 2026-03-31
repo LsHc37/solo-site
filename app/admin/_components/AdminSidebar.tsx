@@ -33,6 +33,16 @@ const NAV = [
     ),
   },
   {
+    href: "/admin/waitlist",
+    label: "Waitlist",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+        <path d="M12 8v4l3 3" />
+        <circle cx="12" cy="12" r="9" />
+      </svg>
+    ),
+  },
+  {
     href: "/admin/enterprise",
     label: "Enterprise",
     icon: (

@@ -31,12 +31,12 @@ export default function PublicFooter() {
                 className="text-sm font-black uppercase"
                 style={{ color: "#E6EDF3", letterSpacing: "0.14em" }}
               >
-                Retro<span style={{ color: "#00F0FF" }}>Gigz</span>
+                Solo <span style={{ color: "#00F0FF" }}>Productivity</span>
               </span>
             </div>
             <p className="text-sm leading-relaxed max-w-xs" style={{ color: "#8B949E" }}>
-              Privacy-first software, independent games, and tactical apparel.
-              Built for digital independence — no compromise.
+              Privacy-first software for solo builders, runners, and focused creators.
+              Built for digital independence and deep work.
             </p>
           </div>
 
@@ -51,7 +51,6 @@ export default function PublicFooter() {
             <ul className="flex flex-col gap-2.5">
               {[
                 { href: "/solo", label: "Solo App" },
-                { href: "/games", label: "Vanguard" },
                 { href: "/community", label: "Community" },
               ].map((l) => (
                 <li key={l.href}>
@@ -101,7 +100,7 @@ export default function PublicFooter() {
           style={{ borderTop: "1px solid #21262D" }}
         >
           <p className="text-xs" style={{ color: "#8B949E" }}>
-            © {year} Retro Gigz. All rights reserved.
+            © {year} Solo Productivity. All rights reserved.
           </p>
           <p
             className="text-xs font-semibold tracking-wider"

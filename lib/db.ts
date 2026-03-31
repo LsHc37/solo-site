@@ -217,6 +217,33 @@ db.exec(`
   ON community_posts (kind, created_at DESC)
 `);
 
+// ── Solo app waitlist submissions ───────────────────────────────────────────
+db.exec(`
+  CREATE TABLE IF NOT EXISTS waitlist_submissions (
+    id                      INTEGER PRIMARY KEY AUTOINCREMENT,
+    platform                TEXT    NOT NULL CHECK (platform IN ('ios')),
+    name                    TEXT    NOT NULL,
+    email                   TEXT,
+    phone                   TEXT,
+    added_to_google_form    INTEGER NOT NULL DEFAULT 0,
+    google_form_added_at    TEXT,
+    ip_address              TEXT    NOT NULL DEFAULT '',
+    user_agent              TEXT    NOT NULL DEFAULT '',
+    created_at              TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+    CHECK ((email IS NOT NULL AND trim(email) != '') OR (phone IS NOT NULL AND trim(phone) != ''))
+  )
+`);
+
+db.exec(`
+  CREATE INDEX IF NOT EXISTS idx_waitlist_created_at
+  ON waitlist_submissions (created_at DESC)
+`);
+
+db.exec(`
+  CREATE INDEX IF NOT EXISTS idx_waitlist_google_form_status
+  ON waitlist_submissions (added_to_google_form, created_at DESC)
+`);
+
 // ── Auth security tables ─────────────────────────────────────────────────────
 db.exec(`
   CREATE TABLE IF NOT EXISTS auth_events (
@@ -317,6 +344,8 @@ const seedSettings: [string, string][] = [
   ["announcement_color", "#00F0FF"],
   ["meta_description", "A master publisher building privacy-first applications, independent games, and tactical apparel."],
   ["contact_email", ""],
+  ["solo_android_play_store_url", "https://play.google.com/store"],
+  ["solo_waitlist_google_form_url", ""],
   ["page_layout_home", ""],
   ["page_layout_solo", ""],
 ];

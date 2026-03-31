@@ -39,9 +39,9 @@ export default async function ContactPage({
           <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13.1a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2.22h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6 6l.94-1.94a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.73 16.92z" />
         </svg>
       ),
-      title: "Games News / Beta",
-      topic: "games-news",
-      desc: "Get updates on Vanguard development or join the beta list.",
+      title: "Solo Product Updates",
+      topic: "product-updates",
+      desc: "Request updates about Solo releases, roadmap milestones, and new features.",
     },
     {
       icon: (
@@ -63,7 +63,7 @@ export default async function ContactPage({
         <section className="max-w-4xl mx-auto px-6 py-20">
           <h1 className="text-4xl font-black tracking-tight">Contact & Support</h1>
           <p className="text-sm mt-3 max-w-lg" style={{ color: "#8B949E" }}>
-            For support, partnerships, game news, or anything else — email us directly. We read everything.
+            For support, partnerships, product updates, or anything else — email us directly. We read everything.
           </p>
 
           {/* Reason cards */}
