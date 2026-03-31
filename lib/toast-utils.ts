@@ -14,13 +14,14 @@ export function useToastAction() {
     options?: {
       successMsg?: string;
       errorMsg?: string;
+      showSuccess?: boolean;
       showError?: boolean;
     }
   ) => {
     try {
       const result = await fn();
-      if (options?.successMsg !== false) {
-        addToast(options?.successMsg || "Operation successful!", "success");
+      if (options?.showSuccess !== false) {
+        addToast(options?.successMsg ?? "Operation successful!", "success");
       }
       return result;
     } catch (error) {
