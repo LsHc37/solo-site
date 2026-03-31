@@ -7,28 +7,36 @@ import PublicNav from "@/components/PublicNav";
 export default function KickstartPage() {
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState(0);
   const [message, setMessage] = useState("");
+
+  const getLoadingMessage = (value: number) => {
+    if (value < 20) return "Booting RetroGigz Master AI v3.1...";
+    if (value < 40) return "Analyzing demographics & calculating custom macros...";
+    if (value < 60) return "Selecting optimal exercises from the Solo Library...";
+    if (value < 80) return "Injecting daily habits, goals, and alarms...";
+    return "Compiling 4-week program and structuring .solo file...";
+  };
 
   const handleGenerate = async () => {
     if (!prompt) return;
 
     setLoading(true);
+    setProgress(0);
+    setMessage(getLoadingMessage(0));
 
-    const loadingSteps = [
-      "Analyzing demographics...",
-      "Calculating custom macros...",
-      "Designing master workout library...",
-      "Validating RPE constraints...",
-      "Packaging .solo file...",
-    ];
-
-    let stepIndex = 0;
-    setMessage(loadingSteps[stepIndex]);
+    const tickMs = 100;
+    const durationMs = 15000;
+    const targetProgress = 95;
+    const increment = targetProgress / (durationMs / tickMs);
 
     let loadingInterval: ReturnType<typeof setInterval> | null = setInterval(() => {
-      stepIndex = (stepIndex + 1) % loadingSteps.length;
-      setMessage(loadingSteps[stepIndex]);
-    }, 1500);
+      setProgress((prev) => {
+        const next = Math.min(targetProgress, prev + increment);
+        setMessage(getLoadingMessage(next));
+        return next;
+      });
+    }, tickMs);
 
     try {
       const res = await fetch("/api/generate-workout", {
@@ -40,6 +48,15 @@ export default function KickstartPage() {
       if (!res.ok) throw new Error("Failed to generate workout JSON");
 
       const data = await res.json();
+
+      if (loadingInterval) {
+        clearInterval(loadingInterval);
+        loadingInterval = null;
+      }
+
+      setProgress(100);
+      setMessage("Success! Downloading my-plan.solo...");
+
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -49,13 +66,6 @@ export default function KickstartPage() {
       a.click();
       a.remove();
       URL.revokeObjectURL(url);
-
-      if (loadingInterval) {
-        clearInterval(loadingInterval);
-        loadingInterval = null;
-      }
-
-      setMessage("Success! my-plan.solo downloaded.");
     } catch (error) {
       if (loadingInterval) {
         clearInterval(loadingInterval);
@@ -96,8 +106,19 @@ export default function KickstartPage() {
             className="mt-5 w-full rounded-xl px-6 py-4 text-base font-black uppercase tracking-wide transition disabled:opacity-60"
             style={{ backgroundColor: "#00F0FF", color: "#0D1117" }}
           >
-            {loading ? "Generating..." : "Generate Workout JSON"}
+            {loading ? `Generating... ${Math.round(progress)}%` : "Generate Workout JSON"}
           </button>
+
+          {loading ? (
+            <div className="mt-4">
+              <div className="h-3 w-full overflow-hidden rounded-full bg-slate-700/60">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-cyan-400 via-teal-300 to-emerald-400 transition-all duration-200 ease-out"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+            </div>
+          ) : null}
 
           {message ? <p className="mt-4 text-sm" style={{ color: "#9CCFD8" }}>{message}</p> : null}
         </section>
