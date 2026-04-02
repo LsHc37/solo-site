@@ -63,7 +63,7 @@ export default function MyFilesClient() {
   );
 
   return (
-    <section className="rounded-3xl border p-6 sm:p-8" style={{ backgroundColor: "#161B22", borderColor: "#21262D" }}>
+    <section className="rounded-3xl border p-6 sm:p-8 lift-card fade-up" style={{ backgroundColor: "#161B22", borderColor: "#21262D" }}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-black tracking-tight sm:text-3xl">My Files</h1>
@@ -77,7 +77,7 @@ export default function MyFilesClient() {
             setLoading(true);
             void fetchFiles();
           }}
-          className="rounded-lg border px-4 py-2 text-xs font-bold uppercase tracking-wide"
+          className="rounded-lg border px-4 py-2 text-xs font-bold uppercase tracking-wide soft-btn"
           style={{ borderColor: "#00F0FF55", color: "#00F0FF" }}
         >
           Refresh
@@ -100,7 +100,7 @@ export default function MyFilesClient() {
       ) : null}
 
       {!loading && !error && files.length > 0 ? (
-        <div className="mt-6 overflow-x-auto rounded-2xl border" style={{ borderColor: "#21262D" }}>
+        <div className="mt-6 overflow-x-auto rounded-2xl border fade-up" style={{ borderColor: "#21262D" }}>
           <table className="min-w-full text-sm">
             <thead style={{ backgroundColor: "#0D1117" }}>
               <tr>
@@ -145,7 +145,7 @@ export default function MyFilesClient() {
                     {file.downloadUrl ? (
                       <a
                         href={file.downloadUrl}
-                        className="rounded-lg border px-3 py-1.5 text-xs font-bold uppercase tracking-wide"
+                        className="rounded-lg border px-3 py-1.5 text-xs font-bold uppercase tracking-wide soft-btn"
                         style={{ borderColor: "#34D39966", color: "#34D399" }}
                       >
                         Download

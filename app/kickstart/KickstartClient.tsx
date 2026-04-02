@@ -130,7 +130,7 @@ export default function KickstartClient() {
     <div style={{ backgroundColor: "#0D1117", minHeight: "100vh", color: "#E6EDF3" }}>
       <PublicNav />
       <main className="mx-auto max-w-3xl px-4 py-12 sm:px-6 sm:py-16">
-        <section className="rounded-3xl border p-6 sm:p-8" style={{ backgroundColor: "#161B22", borderColor: "#21262D" }}>
+        <section className="rounded-3xl border p-6 sm:p-8 lift-card fade-up" style={{ backgroundColor: "#161B22", borderColor: "#21262D" }}>
           <h1 className="text-3xl font-black tracking-tight">Make Your Custom .solo File</h1>
           <p className="mt-3 text-sm sm:text-base" style={{ color: "#8B949E" }}>
             Share your age, weight, goals, experience, and equipment. We will generate your .solo file in the background and save it in My Files.
@@ -147,7 +147,7 @@ export default function KickstartClient() {
           <button
             onClick={handleGenerate}
             disabled={loading || !prompt}
-            className="mt-5 w-full rounded-xl px-6 py-4 text-base font-black uppercase tracking-wide transition disabled:opacity-60"
+            className="mt-5 w-full rounded-xl px-6 py-4 text-base font-black uppercase tracking-wide soft-btn disabled:opacity-60"
             style={{ backgroundColor: "#00F0FF", color: "#0D1117" }}
           >
             {loading ? `Building Your .solo File... ${Math.round(progress)}%` : "Make My Custom .solo File"}
@@ -156,13 +156,13 @@ export default function KickstartClient() {
           {message ? <p className="mt-4 text-sm" style={{ color: "#9CCFD8" }}>{message}</p> : null}
 
           <div className="mt-5 flex flex-wrap gap-3">
-            <Link href="/account" className="rounded-lg border px-4 py-2 text-sm font-bold" style={{ borderColor: "#00F0FF66", color: "#00F0FF" }}>
+            <Link href="/account" className="rounded-lg border px-4 py-2 text-sm font-bold soft-btn" style={{ borderColor: "#00F0FF66", color: "#00F0FF" }}>
               Go to My Files
             </Link>
             {completedFile?.downloadUrl ? (
               <a
                 href={completedFile.downloadUrl}
-                className="rounded-lg border px-4 py-2 text-sm font-bold"
+                className="rounded-lg border px-4 py-2 text-sm font-bold soft-btn"
                 style={{ borderColor: "#34D39966", color: "#34D399" }}
               >
                 Download Ready File
@@ -209,6 +209,16 @@ export default function KickstartClient() {
                 <p className="text-[11px] uppercase tracking-[0.2em]" style={{ color: "#8B949E" }}>Phase 3</p>
                 <p className="mt-1 text-sm font-semibold">Save .solo file to My Files</p>
               </div>
+            </div>
+
+            <div className="mt-6 flex items-center justify-center">
+              <Link
+                href="/account"
+                className="rounded-lg border px-4 py-2 text-sm font-bold soft-btn"
+                style={{ borderColor: "rgba(0, 240, 255, 0.55)", color: "#00F0FF" }}
+              >
+                Go to My Files
+              </Link>
             </div>
           </div>
         </div>

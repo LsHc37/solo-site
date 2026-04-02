@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
+import appIcon from "../app_icon.png";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,6 +16,11 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://retrogigz.com"),
+  icons: {
+    icon: appIcon.src,
+    shortcut: appIcon.src,
+    apple: appIcon.src,
+  },
   title: {
     default: "Retro Gigz | Digital Independence",
     template: "%s | Retro Gigz",

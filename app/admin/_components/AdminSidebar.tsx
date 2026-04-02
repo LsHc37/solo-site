@@ -1,10 +1,12 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import ThemeToggle from "@/components/ThemeToggle";
+import appIcon from "../../../app_icon.png";
 
 const NAV = [
   {
@@ -174,12 +176,10 @@ export default function AdminSidebar({ userEmail }: Props) {
         style={{ borderBottom: "1px solid #21262D" }}
       >
         <div
-          className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+          className="relative w-8 h-8 rounded-lg overflow-hidden flex-shrink-0"
           style={{ backgroundColor: "#00F0FF15", border: "1px solid #00F0FF33" }}
         >
-          <svg viewBox="0 0 24 24" fill="none" stroke="#00F0FF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-          </svg>
+          <Image src={appIcon} alt="Retro Gigz logo" fill className="object-cover" sizes="32px" />
         </div>
         <div className="flex flex-col leading-none">
           <span className="text-xs font-black tracking-widest" style={{ color: "#E6EDF3" }}>

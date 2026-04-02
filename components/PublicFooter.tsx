@@ -1,40 +1,34 @@
+import Image from "next/image";
 import Link from "next/link";
+import appIcon from "../app_icon.png";
 
 export default function PublicFooter() {
   const year = new Date().getFullYear();
 
   return (
-    <footer style={{ backgroundColor: "#0D1117", borderTop: "1px solid #21262D" }}>
+    <footer style={{ backgroundColor: "var(--background)", borderTop: "1px solid var(--border)" }}>
       <div className="mx-auto max-w-6xl px-6 py-12">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 fade-up">
           {/* Brand */}
           <div className="sm:col-span-2">
             <div className="flex items-center gap-2.5 mb-4">
               <div
-                className="w-7 h-7 rounded-lg flex items-center justify-center"
+                className="relative w-7 h-7 rounded-lg overflow-hidden flex-shrink-0"
                 style={{
-                  background: "linear-gradient(135deg, #00F0FF22, #00F0FF08)",
+                  backgroundColor: "#00F0FF12",
                   border: "1px solid #00F0FF44",
                 }}
               >
-                <svg viewBox="0 0 24 24" fill="none" className="w-3.5 h-3.5">
-                  <path
-                    d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
-                    stroke="#00F0FF"
-                    strokeWidth="1.8"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
+                <Image src={appIcon} alt="Retro Gigz logo" fill className="object-cover" sizes="28px" />
               </div>
               <span
                 className="text-sm font-black uppercase"
-                style={{ color: "#E6EDF3", letterSpacing: "0.14em" }}
+                style={{ color: "var(--foreground)", letterSpacing: "0.14em" }}
               >
-                Solo <span style={{ color: "#00F0FF" }}>Productivity</span>
+                Solo <span style={{ color: "var(--accent)" }}>Productivity</span>
               </span>
             </div>
-            <p className="text-sm leading-relaxed max-w-xs" style={{ color: "#8B949E" }}>
+            <p className="text-sm leading-relaxed max-w-xs" style={{ color: "var(--muted)" }}>
               Privacy-first software for solo builders, runners, and focused creators.
               Built for digital independence and deep work.
             </p>
@@ -56,8 +50,8 @@ export default function PublicFooter() {
                 <li key={l.href}>
                   <Link
                     href={l.href}
-                    className="text-sm"
-                    style={{ color: "#8B949E" }}
+                    className="text-sm soft-btn"
+                    style={{ color: "var(--muted)" }}
                   >
                     {l.label}
                   </Link>
@@ -79,13 +73,13 @@ export default function PublicFooter() {
                 { href: "/faq", label: "FAQ" },
                 { href: "/contact", label: "Contact" },
                 { href: "/privacy", label: "Privacy Policy" },
-                { href: "/login", label: "Account" },
+                { href: "/account", label: "Account" },
               ].map((l) => (
                 <li key={l.href}>
                   <Link
                     href={l.href}
-                    className="text-sm"
-                    style={{ color: "#8B949E" }}
+                    className="text-sm soft-btn"
+                    style={{ color: "var(--muted)" }}
                   >
                     {l.label}
                   </Link>
@@ -97,14 +91,14 @@ export default function PublicFooter() {
 
         <div
           className="mt-10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3"
-          style={{ borderTop: "1px solid #21262D" }}
+          style={{ borderTop: "1px solid var(--border)" }}
         >
-          <p className="text-xs" style={{ color: "#8B949E" }}>
+          <p className="text-xs" style={{ color: "var(--muted)" }}>
             © {year} Solo Productivity. All rights reserved.
           </p>
           <p
             className="text-xs font-semibold tracking-wider"
-            style={{ color: "#00F0FF55" }}
+            style={{ color: "color-mix(in srgb, var(--accent) 50%, transparent)" }}
           >
             Digital Independence.
           </p>

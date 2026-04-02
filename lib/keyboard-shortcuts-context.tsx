@@ -54,15 +54,7 @@ export function KeyboardShortcutsProvider({ children }: { children: React.ReactN
         return;
       }
 
-      // Toggle theme on Ctrl+/
-      if (shortcutMatches(event, ["Ctrl", "/"])) {
-        event.preventDefault();
-        const currentTheme = document.documentElement.getAttribute("data-theme") || "dark";
-        const newTheme = currentTheme === "dark" ? "light" : "dark";
-        document.documentElement.setAttribute("data-theme", newTheme);
-        localStorage.setItem("retro-gigz-theme", newTheme);
-        return;
-      }
+      // Ctrl+/ is intentionally unused for theme toggling; site is locked to dark mode.
 
       // Check custom shortcuts
       const allShortcuts = [...GLOBAL_SHORTCUTS, ...ADMIN_SHORTCUTS, ...customShortcuts];

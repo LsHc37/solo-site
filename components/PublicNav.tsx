@@ -1,9 +1,10 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import ThemeToggle from "./ThemeToggle";
+import appIcon from "../app_icon.png";
 
 const NAV_LINKS = [
   { href: "/", label: "Home", exact: true },
@@ -24,32 +25,23 @@ export default function PublicNav() {
 
   return (
     <nav
-      className="sticky top-0 z-40 backdrop-blur-md"
+      className="sticky top-0 z-40 backdrop-blur-md fade-up"
       style={{
         backgroundColor: "var(--surface)",
-        borderBottom: "1px solid var(--border)",
+        borderBottom: "1px solid color-mix(in srgb, var(--border) 85%, transparent)",
       }}
     >
       <div className="mx-auto max-w-6xl px-4 sm:px-6 flex items-center justify-between h-16">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 flex-shrink-0">
           <div
-            className="w-8 h-8 rounded-lg flex items-center justify-center"
+            className="relative w-8 h-8 rounded-lg overflow-hidden flex-shrink-0 lift-card"
             style={{
-              background: "linear-gradient(135deg, var(--accent), transparent)",
+              backgroundColor: "color-mix(in srgb, var(--accent) 10%, transparent)",
               border: "1px solid var(--accent)",
-              opacity: 0.3,
             }}
           >
-            <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4">
-              <path
-                d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
-                stroke="var(--accent)"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+            <Image src={appIcon} alt="Retro Gigz logo" fill className="object-cover" sizes="32px" />
           </div>
           <span
             className="text-sm font-black uppercase"
@@ -67,10 +59,11 @@ export default function PublicNav() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="px-3 py-1.5 rounded-lg text-sm font-medium transition-colors duration-150"
+                className="px-3 py-1.5 rounded-lg text-sm font-medium"
                 style={{
                   color: active ? "var(--foreground)" : "var(--muted)",
-                  backgroundColor: active ? "var(--surface)" : "transparent",
+                  backgroundColor: active ? "color-mix(in srgb, var(--accent) 12%, transparent)" : "transparent",
+                  border: `1px solid ${active ? "color-mix(in srgb, var(--accent) 25%, transparent)" : "transparent"}`,
                 }}
               >
                 {link.label}
@@ -81,15 +74,13 @@ export default function PublicNav() {
 
         {/* Right side */}
         <div className="flex items-center gap-2">
-          <ThemeToggle />
           <Link
-            href="/account"
-            className="hidden md:flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-bold transition-all duration-150"
+            href="/login"
+            className="hidden md:flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-bold soft-btn"
             style={{
-              backgroundColor: "var(--accent)",
-              border: "1px solid var(--accent)",
-              opacity: 0.3,
-              color: "var(--accent)",
+              backgroundColor: "color-mix(in srgb, var(--accent) 17%, transparent)",
+              border: "1px solid color-mix(in srgb, var(--accent) 38%, transparent)",
+              color: "var(--foreground)",
             }}
           >
             <svg
@@ -104,7 +95,7 @@ export default function PublicNav() {
               <circle cx="12" cy="7" r="4" />
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
             </svg>
-            Account
+            Login
           </Link>
 
           {/* Mobile hamburger */}
@@ -145,7 +136,7 @@ export default function PublicNav() {
       {/* Mobile menu */}
       {open && (
         <div
-          className="md:hidden px-4 pb-4 pt-2 flex flex-col gap-1"
+          className="md:hidden px-4 pb-4 pt-2 flex flex-col gap-1 fade-up"
           style={{ borderTop: "1px solid var(--border)" }}
         >
           {NAV_LINKS.map((link) => {
@@ -155,11 +146,10 @@ export default function PublicNav() {
                 key={link.href}
                 href={link.href}
                 onClick={() => setOpen(false)}
-                className="px-3 py-2.5 rounded-lg text-sm font-medium transition-colors"
+                className="px-3 py-2.5 rounded-lg text-sm font-medium"
                 style={{
-                  color: active ? "var(--accent)" : "var(--muted)",
-                  backgroundColor: active ? "var(--accent)" : "transparent",
-                  opacity: active ? 0.15 : 1,
+                  color: active ? "var(--foreground)" : "var(--muted)",
+                  backgroundColor: active ? "color-mix(in srgb, var(--accent) 16%, transparent)" : "transparent",
                 }}
               >
                 {link.label}
@@ -171,7 +161,7 @@ export default function PublicNav() {
               href="/login"
               onClick={() => setOpen(false)}
               className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-bold"
-              style={{ color: "#00F0FF" }}
+              style={{ color: "var(--accent)" }}
             >
               <svg
                 viewBox="0 0 24 24"
@@ -185,7 +175,7 @@ export default function PublicNav() {
                 <circle cx="12" cy="7" r="4" />
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
               </svg>
-              Account / Login
+              Login
             </Link>
           </div>
         </div>
