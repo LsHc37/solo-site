@@ -1,6 +1,7 @@
 "use client";
 
 import { ReactNode, useEffect, useState } from "react";
+import { SessionProvider } from "next-auth/react";
 import { getInitialTheme, applyTheme } from "@/lib/theme";
 import { ToastProvider } from "@/lib/toast-context";
 import { ConfirmDialogProvider } from "@/lib/confirm-dialog-context";
@@ -23,15 +24,17 @@ export function Providers({ children }: { children: ReactNode }) {
   }
 
   return (
-    <ToastProvider>
-      <ConfirmDialogProvider>
-        <KeyboardShortcutsProvider>
-          {children}
-          <ToastContainer />
-          <ConfirmDialog />
-          <KeyboardShortcutsModal />
-        </KeyboardShortcutsProvider>
-      </ConfirmDialogProvider>
-    </ToastProvider>
+    <SessionProvider>
+      <ToastProvider>
+        <ConfirmDialogProvider>
+          <KeyboardShortcutsProvider>
+            {children}
+            <ToastContainer />
+            <ConfirmDialog />
+            <KeyboardShortcutsModal />
+          </KeyboardShortcutsProvider>
+        </ConfirmDialogProvider>
+      </ToastProvider>
+    </SessionProvider>
   );
 }

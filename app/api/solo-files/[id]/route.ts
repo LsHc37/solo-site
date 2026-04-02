@@ -21,6 +21,9 @@ export async function GET(_req: Request, context: { params: Promise<{ id: string
   }
 
   const userId = Number.parseInt(session.user.id, 10);
+  if (!Number.isFinite(userId)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   const params = await context.params;
 
   const file = db

@@ -83,7 +83,7 @@ function DivisionsSection() {
       accent: "#00F0FF",
       tag: "Solo App",
       title: "100% Offline & Private",
-      body: "The all-in-one life OS. AI trainer, food scanner, and budget vault. Your data never leaves your device.",
+      body: "The all-in-one life OS. AI trainer, 400,000+ local foods to search and track, and budget vault. Your data never leaves your device.",
       cta: "Learn more →",
       icon: (
         <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="#00F0FF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">

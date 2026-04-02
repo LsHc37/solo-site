@@ -65,6 +65,9 @@ export async function GET() {
   }
 
   const userId = Number.parseInt(session.user.id, 10);
+  if (!Number.isFinite(userId)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   const files = db
     .prepare(
@@ -98,6 +101,9 @@ export async function POST(req: Request) {
   }
 
   const userId = Number.parseInt(session.user.id, 10);
+  if (!Number.isFinite(userId)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   let userInput = "";
 

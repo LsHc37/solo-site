@@ -23,12 +23,30 @@ export default function KickstartClient() {
   const [jobId, setJobId] = useState<string | null>(null);
   const [completedFile, setCompletedFile] = useState<QueuedFile | null>(null);
 
-  const getLoadingMessage = (value: number) => {
-    if (value < 20) return "Booting RetroGigz Solo Builder v4.0...";
-    if (value < 40) return "Studying your goals and calculating a personalized plan...";
-    if (value < 60) return "Building sessions from the Solo movement library...";
-    if (value < 80) return "Balancing progress, recovery, and daily momentum...";
-    return "Finishing your .solo file and saving it to My Files...";
+  const getStatusDetails = (status: JobStatus) => {
+    switch (status) {
+      case "queued":
+        return {
+          progress: 35,
+          message: "Queued: your .solo file request is waiting to be processed.",
+        };
+      case "processing":
+        return {
+          progress: 75,
+          message: "Processing: building your .solo file now.",
+        };
+      case "completed":
+        return {
+          progress: 100,
+          message: "Completed: your .solo file is ready in My Files.",
+        };
+      case "failed":
+      default:
+        return {
+          progress: 100,
+          message: "Generation failed. Please try again.",
+        };
+    }
   };
 
   useEffect(() => {
@@ -40,11 +58,15 @@ export default function KickstartClient() {
         if (!res.ok) return;
 
         const data = (await res.json()) as QueuedFile;
+        const details = getStatusDetails(data.status);
+        setProgress(details.progress);
+        if (data.status !== "failed") {
+          setMessage(details.message);
+        }
 
         if (data.status === "completed") {
           setCompletedFile(data);
-          setProgress(100);
-          setMessage("Your .solo file is ready in My Files. You can download it now or later.");
+          setMessage("Completed: your .solo file is ready. Open My Files to download it anytime.");
           setLoading(false);
           clearInterval(poll);
         }
@@ -66,23 +88,10 @@ export default function KickstartClient() {
     if (!prompt) return;
 
     setLoading(true);
-    setProgress(0);
-    setMessage(getLoadingMessage(0));
+    setProgress(10);
+    setMessage("Submitting your .solo file request...");
     setJobId(null);
     setCompletedFile(null);
-
-    const tickMs = 120;
-    const durationMs = 25000;
-    const targetProgress = 95;
-    const increment = targetProgress / (durationMs / tickMs);
-
-    let loadingInterval: ReturnType<typeof setInterval> | null = setInterval(() => {
-      setProgress((prev) => {
-        const next = Math.min(targetProgress, prev + increment);
-        setMessage(getLoadingMessage(next));
-        return next;
-      });
-    }, tickMs);
 
     try {
       const res = await fetch("/api/solo-files", {
@@ -102,27 +111,13 @@ export default function KickstartClient() {
 
       const data = (await res.json()) as { id: string };
 
-      if (loadingInterval) {
-        clearInterval(loadingInterval);
-        loadingInterval = null;
-      }
-
-      setProgress(15);
-      setMessage("Your .solo file request is queued. You can close this tab and check My Files anytime.");
+      setProgress(35);
+      setMessage("Queued: your .solo file request is in line. You can close this tab and check My Files.");
       setJobId(data.id);
     } catch (error) {
-      if (loadingInterval) {
-        clearInterval(loadingInterval);
-        loadingInterval = null;
-      }
-
       const errorMessage = error instanceof Error ? error.message : "Error generating file. Please try again.";
       setMessage(errorMessage);
       setLoading(false);
-    } finally {
-      if (loadingInterval) {
-        clearInterval(loadingInterval);
-      }
     }
   };
 

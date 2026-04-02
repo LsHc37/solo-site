@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import PublicNav from "@/components/PublicNav";
@@ -34,6 +35,13 @@ export default function SoloPage() {
     contentBlocks: {},
   });
   const [siteStateLoaded, setSiteStateLoaded] = useState(false);
+  const [activeScreenshot, setActiveScreenshot] = useState(() => Math.floor(Math.random() * 27));
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
+
+  const screenshotSlides = Array.from(
+    { length: 27 },
+    (_, index) => `/solo-screenshots/solo-${String(index + 1).padStart(2, "0")}.png`,
+  );
 
   useEffect(() => {
     fetch("/api/public/site-state", { cache: "no-store" })
@@ -55,6 +63,46 @@ export default function SoloPage() {
       })
       .finally(() => setSiteStateLoaded(true));
   }, []);
+
+  useEffect(() => {
+    if (screenshotSlides.length === 0) return;
+
+    const intervalId = setInterval(() => {
+      setActiveScreenshot((prev) => (prev + 1) % screenshotSlides.length);
+    }, 3600);
+
+    return () => clearInterval(intervalId);
+  }, [screenshotSlides.length]);
+
+  const showNextSlide = () => {
+    setActiveScreenshot((prev) => (prev + 1) % screenshotSlides.length);
+  };
+
+  const showPrevSlide = () => {
+    setActiveScreenshot((prev) => (prev - 1 + screenshotSlides.length) % screenshotSlides.length);
+  };
+
+  const handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
+    setTouchStartX(event.touches[0]?.clientX ?? null);
+  };
+
+  const handleTouchEnd = (event: React.TouchEvent<HTMLDivElement>) => {
+    if (touchStartX === null) return;
+
+    const endX = event.changedTouches[0]?.clientX;
+    if (typeof endX !== "number") return;
+
+    const swipeDistance = touchStartX - endX;
+    if (Math.abs(swipeDistance) < 35) return;
+
+    if (swipeDistance > 0) {
+      showNextSlide();
+    } else {
+      showPrevSlide();
+    }
+
+    setTouchStartX(null);
+  };
 
   if (!siteStateLoaded) {
     return (
@@ -93,7 +141,7 @@ export default function SoloPage() {
   const soloHeroTitle = getBlock("solo_hero_title", "100% Offline\n& Private");
   const soloHeroSubheadline = getBlock(
     "solo_hero_subheadline",
-    "The ultimate all-in-one life operating system. AI trainer, food scanner, and budget vault. Your data never leaves your device.",
+    "The ultimate all-in-one life operating system. AI trainer, 400,000+ local foods to search and track, and budget vault. Your data never leaves your device.",
   );
 
   return (
@@ -167,7 +215,7 @@ export default function SoloPage() {
           </div>
         </div>
 
-        {/* Right Column — Phone Mockup Placeholder */}
+        {/* Right Column — Phone Slideshow */}
         <div className="flex-1 flex justify-center lg:justify-end">
           <div
             className="relative w-64 h-[520px] sm:w-72 sm:h-[580px] rounded-[3rem] flex items-center justify-center border"
@@ -179,17 +227,52 @@ export default function SoloPage() {
           >
             <div className="absolute top-5 w-24 h-6 rounded-full" style={{ backgroundColor: "#0D1117" }} />
             <div
-              className="w-[85%] h-[78%] rounded-[2rem] flex flex-col items-center justify-center gap-3 mt-4"
+              className="relative w-[85%] h-[78%] rounded-[2rem] mt-4 overflow-hidden"
               style={{ backgroundColor: "#0D1117", border: "1px solid #21262D" }}
+              onTouchStart={handleTouchStart}
+              onTouchEnd={handleTouchEnd}
             >
-              <div
-                className="w-14 h-14 rounded-2xl"
-                style={{
-                  background: "linear-gradient(135deg, #00F0FF 0%, #0070FF 100%)",
-                  boxShadow: "0 0 24px rgba(0, 240, 255, 0.5)",
-                }}
+              <Image
+                key={screenshotSlides[activeScreenshot]}
+                src={screenshotSlides[activeScreenshot]}
+                alt={`Solo app screenshot ${activeScreenshot + 1}`}
+                fill
+                sizes="(max-width: 640px) 220px, 260px"
+                className="object-cover"
+                priority
               />
-              <span className="text-xs font-medium" style={{ color: "#8B949E" }}>3D Mockup</span>
+              <button
+                type="button"
+                onClick={showPrevSlide}
+                aria-label="Previous screenshot"
+                className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full flex items-center justify-center border transition-colors duration-200"
+                style={{ backgroundColor: "rgba(13,17,23,0.65)", borderColor: "#30363D", color: "#E6EDF3" }}
+              >
+                <span aria-hidden="true">&#8249;</span>
+              </button>
+              <button
+                type="button"
+                onClick={showNextSlide}
+                aria-label="Next screenshot"
+                className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full flex items-center justify-center border transition-colors duration-200"
+                style={{ backgroundColor: "rgba(13,17,23,0.65)", borderColor: "#30363D", color: "#E6EDF3" }}
+              >
+                <span aria-hidden="true">&#8250;</span>
+              </button>
+              <div className="absolute inset-x-0 bottom-0 h-16" style={{ background: "linear-gradient(180deg, transparent 0%, rgba(13,17,23,0.45) 100%)" }} />
+              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5">
+                {screenshotSlides.map((_, index) => (
+                  <span
+                    key={index}
+                    className="h-1.5 rounded-full transition-all duration-300"
+                    style={{
+                      width: index === activeScreenshot ? "18px" : "6px",
+                      backgroundColor: index === activeScreenshot ? "#00F0FF" : "#6B7280",
+                      opacity: index === activeScreenshot ? 1 : 0.65,
+                    }}
+                  />
+                ))}
+              </div>
             </div>
             <div className="absolute bottom-4 w-24 h-1.5 rounded-full" style={{ backgroundColor: "#30363D" }} />
           </div>
@@ -220,7 +303,7 @@ export default function SoloPage() {
             </div>
           </div>
 
-          {/* Card 2 — Food Scanner */}
+          {/* Card 2 — Food Database */}
           <div className="flex flex-col gap-4 p-6 rounded-2xl border transition-all duration-200 hover:-translate-y-1" style={{ backgroundColor: "#161B22", borderColor: "#21262D" }}>
             <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ backgroundColor: "#0D1117" }}>
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#00F0FF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
@@ -229,8 +312,8 @@ export default function SoloPage() {
               </svg>
             </div>
             <div>
-              <h3 className="font-bold text-base mb-1" style={{ color: "#E6EDF3" }}>400k+ Item Food Scanner</h3>
-              <p className="text-sm leading-relaxed" style={{ color: "#8B949E" }}>Scan any barcode and instantly get full macros and micronutrients from a massive offline database — no camera permission to any server.</p>
+              <h3 className="font-bold text-base mb-1" style={{ color: "#E6EDF3" }}>400k+ Local Food Database</h3>
+              <p className="text-sm leading-relaxed" style={{ color: "#8B949E" }}>Search through more than 400,000 foods and track macros and micronutrients from a massive on-device database.</p>
             </div>
           </div>
 

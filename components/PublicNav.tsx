@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { useSession } from "next-auth/react";
 import appIcon from "../app_icon.png";
 
 const NAV_LINKS = [
@@ -18,6 +19,10 @@ const NAV_LINKS = [
 export default function PublicNav() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const { status } = useSession();
+  const isAuthed = status === "authenticated";
+  const authHref = isAuthed ? "/account" : "/login";
+  const authLabel = isAuthed ? "Account" : "Login";
 
   function isActive(href: string, exact?: boolean) {
     return exact ? pathname === href : pathname.startsWith(href);
@@ -75,7 +80,7 @@ export default function PublicNav() {
         {/* Right side */}
         <div className="flex items-center gap-2">
           <Link
-            href="/login"
+            href={authHref}
             className="hidden md:flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-bold soft-btn"
             style={{
               backgroundColor: "color-mix(in srgb, var(--accent) 17%, transparent)",
@@ -95,7 +100,7 @@ export default function PublicNav() {
               <circle cx="12" cy="7" r="4" />
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
             </svg>
-            Login
+            {authLabel}
           </Link>
 
           {/* Mobile hamburger */}
@@ -158,7 +163,7 @@ export default function PublicNav() {
           })}
           <div className="mt-1 pt-2" style={{ borderTop: "1px solid var(--border)" }}>
             <Link
-              href="/login"
+              href={authHref}
               onClick={() => setOpen(false)}
               className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-bold"
               style={{ color: "var(--accent)" }}
@@ -175,7 +180,7 @@ export default function PublicNav() {
                 <circle cx="12" cy="7" r="4" />
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
               </svg>
-              Login
+              {authLabel}
             </Link>
           </div>
         </div>
