@@ -244,6 +244,33 @@ db.exec(`
   ON waitlist_submissions (added_to_google_form, created_at DESC)
 `);
 
+// ── User solo files ─────────────────────────────────────────────────────────
+db.exec(`
+  CREATE TABLE IF NOT EXISTS solo_files (
+    id            TEXT    PRIMARY KEY,
+    user_id       INTEGER NOT NULL,
+    prompt        TEXT    NOT NULL,
+    filename      TEXT    NOT NULL,
+    status        TEXT    NOT NULL DEFAULT 'queued' CHECK (status IN ('queued', 'processing', 'completed', 'failed')),
+    content       TEXT,
+    error_message TEXT,
+    created_at    TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+    updated_at    TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+    completed_at  TEXT,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  )
+`);
+
+db.exec(`
+  CREATE INDEX IF NOT EXISTS idx_solo_files_user_created
+  ON solo_files (user_id, created_at DESC)
+`);
+
+db.exec(`
+  CREATE INDEX IF NOT EXISTS idx_solo_files_status_updated
+  ON solo_files (status, updated_at DESC)
+`);
+
 // ── Auth security tables ─────────────────────────────────────────────────────
 db.exec(`
   CREATE TABLE IF NOT EXISTS auth_events (
