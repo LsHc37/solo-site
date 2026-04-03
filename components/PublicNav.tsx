@@ -19,7 +19,7 @@ const NAV_LINKS = [
 export default function PublicNav() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const { status } = useSession();
+  const { status } = useSession() || {};
   const isAuthed = status === "authenticated";
   const authHref = isAuthed ? "/account" : "/login";
   const authLabel = isAuthed ? "Account" : "Login";
